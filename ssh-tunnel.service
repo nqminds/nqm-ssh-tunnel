@@ -1,0 +1,38 @@
+# %i is replaced by whatever is given after the @ symbol.
+# if you put an @ in the file name (none in this one)
+
+# ie running `sudo systemctl enable network-wireless\@wlancheeseburger`
+# would mean %i=wlancheeseburger
+
+[Unit]
+Description=SSH Tunnel for nqminds IoT Hub
+Wants=network.target
+After=network.target
+After=ssh.service
+
+# try until we fail 3x in 150s.
+# this basically means try again forever
+StartLimitIntervalSec=150
+StartLimitBurst=3
+
+[Service]
+# runs each ExecStartPre in order on startup, then ExecStart, then ExecStartPost
+# and runs ExecStop on shutdown, if RemainAfterExit=yes
+
+Type=simple
+
+ExecStart=/bin/bash /usr/local/interlinq/ssh-tunnel.bash
+
+# try to restart and find an SSH connection
+# restarts until StartLimits are hit
+Restart=always
+
+# give a long cooldown period
+RestartSec=60s
+
+# Can force restart every x seconds, but causes a core-dump, potentially
+# filling up disk space
+#WatchdogSec=604800
+
+[Install]
+WantedBy=default.target

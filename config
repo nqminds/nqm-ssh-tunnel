@@ -1,0 +1,23 @@
+
+Host nqminds-iot-hub-ssh-control
+        HostName ec2-34-244-197-164.eu-west-1.compute.amazonaws.com
+        User colossus
+        Port 22
+        # Check connection every 15 seconds to see if connection is alive
+        ServerAliveInterval 15
+        # Closes connection if connection is dead for 1 minute 30 seconds
+        ServerAliveCountMax 6
+        # Slows down ssh, but 3g connection is expensive
+        Compression yes
+        # Only works for ssh v1, which has security holes!
+        #CompressionLevel
+        # RemoteCommand is only supported in OpenSSH 7.6, but Artful 17.10 only
+        # has 7.5
+        #RemoteCommand
+
+        # Makes the SSH command fail if the RemoteForward didn't work
+        # This means we can use a new port if it the connection fails
+        ExitOnForwardFailure yes
+
+        # so the first time we ssh in, we don't get asked if we are sure
+        StrictHostKeyChecking=no
