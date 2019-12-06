@@ -45,7 +45,7 @@ function install-service() {
     mkdir -p "${HOME}/.local/bin"
     cp "${script_dir}/ssh-tunnel.bash" "${HOME}/.local/bin/"
     # start user-systemd on boot, not login
-    loginctl enable-linger "$USER"
+    sudo loginctl enable-linger "$USER"
     mkdir -p "${HOME}/.config/systemd/user"
     cp "${script_dir}/ssh-tunnel.service" "${HOME}/.config/systemd/user/"
     systemctl --user daemon-reload
