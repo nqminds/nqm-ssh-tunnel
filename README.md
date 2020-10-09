@@ -20,7 +20,7 @@ Do not run this bash script as root using `sudo`,
 the script will ask you for your `sudo` password when needed.
 
 ```bash
-bash ssh-tunnel.bash ./your/path/to/the/private/key
+bash install.bash ./your/path/to/the/private/key
 ```
 
 This will:
