@@ -54,7 +54,7 @@ function install-service() {
 }
 
 function install-ssh-key() {
-    sudo apt install haveged -y # recommended to increase entropy
+    sudo apt-get install haveged -y # recommended to increase entropy
     # create SSH key if one does not exist
     if [ ! -f "${HOME}/.ssh/id_ed25519.pub" ]; then
         ssh-keygen -t ed25519 -C "${USER}@$(hostname)" \
