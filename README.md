@@ -29,6 +29,11 @@ This will:
   - WARNING, IT WILL NOT UPDATE IF THERE IS ALREADY AN ENTRY
 - connect to the SSH server using the privatekey provided,
 - create a new public/private key that will be used for future logins,
+  - Warning, this will use up some entropy,
+    so if running from a headless server on a old Linux distro, you can do:
+      - Install `rng-tools` to use a hardware random number generator (if available)
+      - Install `haveged` to use a "fake" random number generator (especially weak on virtual machines)
+      - Open another `ssh` window and just mash random keys into the terminal until entropy increases.
 - install the new public key on the SSH server,
 - install a systemd user service to automatically setup a reverse tunnel
 - starts the reverse tunnel service
