@@ -1,5 +1,5 @@
 [Unit]
-Description=SSH Tunnel for nqminds IoT Hub
+Description=SSH Tunnel to %I for nqminds IoT Hub
 Wants=network.target
 After=network.target
 After=ssh.service
@@ -15,7 +15,7 @@ StartLimitBurst=3
 
 Type=simple
 
-ExecStart=/bin/bash %h/.local/bin/ssh-tunnel.bash
+ExecStart=/usr/bin/ssh-tunnel.bash --destination %I
 
 # try to restart and find an SSH connection
 # restarts until StartLimits are hit

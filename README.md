@@ -63,35 +63,10 @@ Host dazzling-dream
 	ProxyJump amazonhubnqm # we "Jump" through the SSH reverse server
 ```
 
-### Viewing logs
+### OS specific instructions
 
-If you ever want to view the logs of the reverse SSH service, you can do this
-via:
+To build `ssh-tunnel` for specific operating systems, see [Building packages](./doc/Building-packages.md)
 
-```bash
-journalctl --user -u ssh-tunnel.service
-```
+For OS specific usage instructions, see:
 
-`journalctl` has the `-f` flag to watch the live logs of a service, that
-may be useful in debugging:
-
-```bash
-journalctl --user -fu ssh-tunnel.service
-```
-
-### Stopping/disabling the service
-
-You can disable (prevent the service from launching on startup), or stop
-the service by using `systemctl --user`. Example:
-
-**To stop the service**
-
-```bash
-systemctl --user stop ssh-tunnel.service
-```
-
-**To disable the service from running on the next boot**
-
-```bash
-systemctl --user disable ssh-tunnel.service
-```
+- [Debian/Ubuntu](./debian/README.Debian)
