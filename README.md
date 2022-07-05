@@ -29,8 +29,8 @@ Then, you can run add the public key (from `cat ~/.ssh/id_ed25519.pub`) to the S
 Finally, you can run the following command to create the SSH tunnel:
 
 ```bash
-./ssh-tunnel.bash --check # checks to see if the SSH tunnel works
-./ssh-tunnel.bash # creates the SSH tunnel (use --destination to specify the server)
+./ssh-tunnel --check # checks to see if the SSH tunnel works
+./ssh-tunnel # creates the SSH tunnel (use --destination to specify the server)
 ```
 
 ### Finding the tunnel
