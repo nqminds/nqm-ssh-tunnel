@@ -4,39 +4,38 @@ Creates a reverse SSH tunnel to an SSH server.
 
 ## Usage
 
-First, configure `config` to contain the username and hostname of the
+### Setup
+
+First, configure your `~/.ssh/config` to contain the username and hostname of the
 SSH server:
 
-```
+```conf
 Host nqminds-iot-hub-ssh-control
         HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com # change this
         User ubuntu # change this
 ```
 
-Run the `install.bash` script to install on the hub, using a pre-existing private key for the SSH server (e.g. one used to login into AWS ssh server) located in folder ```/tmp/key```.
-This private key will only be used for the initial setup, and can be removed later. Change the permission of the key with:
-```
-chmod 600 /tmp/key
-```
-
-Do not run this bash script as root using `sudo`,
-the script will ask you for your `sudo` password when needed.
+Next, if you do not have a public key configured (e.g. `ls ~/.ssh/*.pub` returns no such file),
+then you can create a passphrase-less key with:
 
 ```bash
-bash install.bash ./your/path/to/the/private/key
+if [ ! -f ~/.ssh/id_ed25519 ]; then
+	ssh-keygen -t ed25519 -N "" -C "$(whoami)@$(hostname)" -f ~/.ssh/id_ed25519
+fi
 ```
 
-This will:
+Then, you can run add the public key (from `cat ~/.ssh/id_ed25519.pub`) to the SSH server.
 
-- install the given config in the `~/.ssh/config` file if it doesn't exist.
-  - WARNING, IT WILL NOT UPDATE IF THERE IS ALREADY AN ENTRY
-- connect to the SSH server using the privatekey provided,
-- create a new public/private key that will be used for future logins,
-- install the new public key on the SSH server,
-- install a systemd user service to automatically setup a reverse tunnel
-- starts the reverse tunnel service
+Finally, you can run the following command to create the SSH tunnel:
 
-Then, when you connect to the SSH server, you will find a folder called `connections`.
+```bash
+./ssh-tunnel.bash --check # checks to see if the SSH tunnel works
+./ssh-tunnel.bash # creates the SSH tunnel (use --destination to specify the server)
+```
+
+### Finding the tunnel
+
+When you connect to the SSH server, you will find a folder called `connections`.
 Each file will have the name of a connected reverse SSH host, of format `<username>@<hostname>:<port>`, e.g.
 
 ```console
