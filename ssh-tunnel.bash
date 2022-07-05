@@ -1,6 +1,6 @@
- #!/usr/bin/env bash
+#!/usr/bin/env bash
 #
-# Creates an SSH Tunnel.
+# Creates an SSH Tunnel to the specified server.
 
 function ssh-tunnel() {
   MACHINE_ID=$(cat /etc/machine-id)
@@ -23,7 +23,7 @@ function ssh-tunnel() {
   # going www.server.com:8080 will connect to the client:22
 
   while FNAME="${MYNAME}:${PORT}" \
-    && ssh -tt -o "RemoteForward=localhost:${PORT} localhost:22" nqminds-iot-hub-ssh-control \
+    && ssh -tt -o "RemoteForward=localhost:${PORT} localhost:22" "${destination}" \
     "mkdir -p ~/connections \
     && FNAME=${FNAME} \
     && if [ -f ~/connections/\${FNAME} \
@@ -62,7 +62,63 @@ function ssh-tunnel() {
   done
 }
 
+destination=nqminds-iot-hub-ssh-control
+
+help_text="Usage: $(basename "$0") [OPTIONS] [DESTINATION]
+
+Creates an SSH tunnel to the specified server.
+
+The tunnel port will be 'localhost:<port>' on the server, where
+<port> is a pseudo-random port based on this machines's /etc/machine-id value.
+(or random if it's not available).
+
+While the tunnel is active, a file called '~/connections/<hostname>:<port>'
+will be created on the server, containing the 'ip a' data of this
+machine. You can then SSH into this machine from the server using:
+'ssh <user>@localhost -p <port>'.
+
+When the tunnel is closed, the file will be renamed to
+'~/connections/<hostname>:<port>+disconnected'.
+
+Options:
+  -h, --help: Show this help message and exit.
+  -d, --destination: The destination to SSH to.
+                     Defaults to nqminds-iot-hub-ssh-control
+                     in your ~/.ssh/config file.
+"
+
+showHelp() {
+  echo 2>&1 "$help_text"
+}
+
+options=$(getopt -l "help,destination:" -o "h,d:" -- "$@")
+eval set -- "$options"
+
+while true; do
+case $1 in
+-h|--help)
+    showHelp
+    exit 0
+    ;;
+-d|--destination)
+    destination="$2"
+    shift
+    ;;
+--)
+    shift
+    break;;
+*) # default
+    showHelp
+    exit 1
+    ;;
+esac
+shift
+done
+
+export destination="${destination}"
+
 ssh-tunnel
 
+echo 2>&1 "$(basename "$0") --destination ${destination} failed"
 # always return failure since ssh-tunnel should never end
 exit 1
