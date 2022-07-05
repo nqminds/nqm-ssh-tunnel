@@ -2,9 +2,20 @@
 #
 # Creates an SSH Tunnel to the specified server.
 
+# Adds SSH options to the given array.
+function ssh-global-options() {
+  # Bash 4.3+ nameref https://www.gnu.org/software/bash/manual/html_node/Shell-Parameters.html
+  local -n arr="$1"
+  if [ -r "${config}" ]; then
+    arr+=("-F" "${config}")
+  fi
+}
+
 function ssh-check() {
   MYNAME="$(whoami)@$(hostname)"
-  ssh "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
+  ssh_options=()
+  ssh-global-options ssh_options
+  ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
 }
 
 function ssh-tunnel() {
@@ -27,8 +38,15 @@ function ssh-tunnel() {
   # putting *:${PORT}, means the port is accessible from all interfaces, ie
   # going www.server.com:8080 will connect to the client:22
 
+  ssh_options=(
+    # description of ssh flags at https://manpages.ubuntu.com/manpages/jammy/man1/ssh.1.html
+    "-tt" # force tty (so that `trap` works properly to monitor the tunnel)
+    "-o" "RemoteForward=localhost:${PORT} localhost:22"
+  )
+  ssh-global-options ssh_options
+
   while FNAME="${MYNAME}:${PORT}" \
-    && ssh -tt -o "RemoteForward=localhost:${PORT} localhost:22" "${destination}" \
+    && ssh "${ssh_options[@]}" "${destination}" \
     "mkdir -p ~/connections \
     && FNAME=${FNAME} \
     && if [ -f ~/connections/\${FNAME} \
@@ -68,6 +86,7 @@ function ssh-tunnel() {
 }
 
 destination=nqminds-iot-hub-ssh-control
+config="/etc/ssh-tunnel/ssh-tunnel.config"
 check=0
 
 help_text="Usage: $(basename "$0") [OPTIONS] [DESTINATION]
@@ -90,17 +109,21 @@ Options:
   -h, --help:        Show this help message and exit.
   -d, --destination: The destination to SSH to.
                      Defaults to nqminds-iot-hub-ssh-control
-                     in your ~/.ssh/config file.
+                     in your ssh_config file.
   --check:           Checks to see if SSH can be used to connect to the target.
                      Creates a file called '~/connections/<hostname>.test' to check
                      for permission errors.
+  -c, --config:      Specify a custom ssh_config file.
+                     Defaults to $config.
+                     Ignored if this file doesn't exist or cannot be read.
+
 "
 
 showHelp() {
   echo 2>&1 "$help_text"
 }
 
-options=$(getopt -l "help,destination:,check" -o "h,d:" -- "$@")
+options=$(getopt -l "help,destination:,check,config:" -o "h,d:" -- "$@")
 eval set -- "$options"
 
 while [ "$1" ]; do
@@ -117,19 +140,28 @@ case $1 in
     check=1
     shift
     ;;
+--config)
+    if [ -r "$2" ]; then
+      config="$2"
+    else
+      echo "Warning: Ignoring --config '$2' as it is not a readable file." >&2
+    fi
+    shift
+    ;;
 --)
     shift
     break;;
 *) # default
     echo "Unknown option: $1" >&2
     showHelp
-    exit 1
+    exit 22
     ;;
 esac
 shift
 done
 
 export destination="${destination}"
+export config="$config"
 
 if [ "$check" -ne 0 ]; then
   ssh-check

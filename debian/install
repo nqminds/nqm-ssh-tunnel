@@ -1,1 +1,2 @@
 ssh-tunnel usr/bin
+ssh-tunnel.config etc/ssh-tunnel

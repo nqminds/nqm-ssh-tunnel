@@ -10,6 +10,8 @@ Vcs-Git: https://github.com/nqminds/nqm-ssh-tunnel.git
 
 Package: ssh-tunnel
 Architecture: all
-Depends: openssh-client, bash
+Depends:
+ openssh-client,
+ bash (>= 4.3)
 Description: NquiringMinds SSH Tunnel Service.
  Automatically sets up a reverse SSH tunnel to a remote host.
