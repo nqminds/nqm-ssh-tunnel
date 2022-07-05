@@ -2,6 +2,11 @@
 #
 # Creates an SSH Tunnel to the specified server.
 
+function ssh-check() {
+  MYNAME="$(whoami)@$(hostname)"
+  ssh "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
+}
+
 function ssh-tunnel() {
   MACHINE_ID=$(cat /etc/machine-id)
   SALTED_MACHINE_ID=$(\
@@ -63,6 +68,7 @@ function ssh-tunnel() {
 }
 
 destination=nqminds-iot-hub-ssh-control
+check=0
 
 help_text="Usage: $(basename "$0") [OPTIONS] [DESTINATION]
 
@@ -81,20 +87,23 @@ When the tunnel is closed, the file will be renamed to
 '~/connections/<hostname>:<port>+disconnected'.
 
 Options:
-  -h, --help: Show this help message and exit.
+  -h, --help:        Show this help message and exit.
   -d, --destination: The destination to SSH to.
                      Defaults to nqminds-iot-hub-ssh-control
                      in your ~/.ssh/config file.
+  --check:           Checks to see if SSH can be used to connect to the target.
+                     Creates a file called '~/connections/<hostname>.test' to check
+                     for permission errors.
 "
 
 showHelp() {
   echo 2>&1 "$help_text"
 }
 
-options=$(getopt -l "help,destination:" -o "h,d:" -- "$@")
+options=$(getopt -l "help,destination:,check" -o "h,d:" -- "$@")
 eval set -- "$options"
 
-while true; do
+while [ "$1" ]; do
 case $1 in
 -h|--help)
     showHelp
@@ -104,10 +113,15 @@ case $1 in
     destination="$2"
     shift
     ;;
+--check)
+    check=1
+    shift
+    ;;
 --)
     shift
     break;;
 *) # default
+    echo "Unknown option: $1" >&2
     showHelp
     exit 1
     ;;
@@ -117,6 +131,10 @@ done
 
 export destination="${destination}"
 
+if [ "$check" -ne 0 ]; then
+  ssh-check
+  exit "$?"
+fi
 ssh-tunnel
 
 echo 2>&1 "$(basename "$0") --destination ${destination} failed"
