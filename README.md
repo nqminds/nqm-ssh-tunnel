@@ -69,4 +69,4 @@ To build `ssh-tunnel` for specific operating systems, see [Building packages](./
 
 For OS specific usage instructions, see:
 
-- [Debian/Ubuntu](./debian/README.Debian)
+- [Debian/Ubuntu](./debian/README.md)
