@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: nqm-ssh-tunnel
+Upstream-Contact: Alois Klink <alois@nquiringminds.com>
+Source: https://github.com/nqminds/nqm-ssh-tunnel
+
+Files: *
+Copyright: 2019-2022, NquiringMinds Ltd.
+License: Unlicensed
+
+License: Unlicensed
+ This software is currently unlicensed.
