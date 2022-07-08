@@ -24,12 +24,15 @@ function ssh-tunnel() {
     mac="$(cat /sys/class/net/*/address | head -1)"
     MACHINE_ID="$(( 0x"${mac//:/''}" ))"
   fi
+  SALTED_MACHINE_ID_HEX=$(
+    echo "${MACHINE_ID}_nqminds-random-fixed-saltWW19bNQ5VI2xkM" | openssl dgst -hex -sha512-256 | grep -oE '[[:xdigit:]]{64}'
+  )
   SALTED_MACHINE_ID=$(\
           echo "${MACHINE_ID}_nqminds-random-fixed-saltWW19bNQ5VI2xkM" \
           | openssl dgst -binary -sha512-256 | openssl base64 -A )
 
   # default tunnel port in 49152-65535 fixed on machine id
-  PORT=$((0x$MACHINE_ID%16383 + 49152))
+  PORT=$((0x$SALTED_MACHINE_ID_HEX%16383 + 49152))
 
   # see https://tools.ietf.org/html/rfc3548#page-6 for base64 in filenames
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"/"/"_"}
