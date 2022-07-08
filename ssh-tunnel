@@ -19,7 +19,7 @@ function ssh-check() {
 }
 
 function ssh-tunnel() {
-  MACHINE_ID=$(cat /etc/machine-id)
+  MACHINE_ID=$(cat /var/lib/dbus/machine-id)
   SALTED_MACHINE_ID=$(\
           echo "${MACHINE_ID}_nqminds-random-fixed-saltWW19bNQ5VI2xkM" \
           | openssl dgst -binary -sha512-256 | openssl base64 -A )
