@@ -12,7 +12,7 @@ function ssh-global-options() {
 }
 
 function ssh-check() {
-  MYNAME="$(whoami)@$(hostname)"
+  MYNAME="$(id -u -n)@$(uname -n)"
   ssh_options=()
   ssh-global-options ssh_options
   ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
@@ -30,7 +30,7 @@ function ssh-tunnel() {
   # see https://tools.ietf.org/html/rfc3548#page-6 for base64 in filenames
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"/"/"_"}
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"+"/"-"}
-  MYNAME="$(whoami)@$(hostname)"
+  MYNAME="$(id -u -n)@$(uname -n)"
 
   # keep on running ssh tunnel until we don't have a listen port failure
 
