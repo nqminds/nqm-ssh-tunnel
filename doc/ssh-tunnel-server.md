@@ -2,6 +2,15 @@
 
 Recommended secure config for the Nquiringminds's SSH Tunnel Server.
 
+The following instructions creates a new user called `ssh-tunnel` on your server.
+A chroot jail is then created at `/home/ssh-tunnel/chroot-jail` containing
+only the files required for the ssh-tunnel script to work.
+
+Finally, the `/etc/ssh/sshd_config` SSH config is modified so that ssh-ing
+into the `ssh-tunnel` will always lead into the Chroot Jail.
+
+### Create Chroot Jail
+
 ```bash
 # creates /home/ssh-tunnel
 sudo adduser --system ssh-tunnel --shell /usr/bin/bash
@@ -23,7 +32,7 @@ function create_chroot_jail() {
     sudo mkdir --parents "$chroot"/{dev,usr/bin,lib/x86_64-linux-gnu,lib64,home/ssh-tunnel/connections}
     # chroot jail must be owned by root
     sudo chown --recursive root:root "$chroot"
-    sudo chmod --recursive 0755 "$chroot"
+    sudo chmod 0755 "$chroot"
     sudo chown --recursive ssh-tunnel "$chroot"/home/ssh-tunnel/connections
 
     function copy_symlinks_to_file() {
@@ -64,6 +73,8 @@ function create_chroot_jail() {
 create_chroot_jail "$chroot"
 ln -s "$chroot"/home/ssh-tunnel/connections /home/ssh-tunnel/connections
 ```
+
+### `/etc/ssh/sshd_config` config
 
 Then, add the following file to your `/etc/ssh/sshd_config` file:
 
