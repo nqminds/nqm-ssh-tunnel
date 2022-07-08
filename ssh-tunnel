@@ -19,7 +19,11 @@ function ssh-check() {
 }
 
 function ssh-tunnel() {
-  MACHINE_ID=$(cat /var/lib/dbus/machine-id)
+  MACHINE_ID=$(cat /var/lib/dbus/machine-id || true)
+  if [ -z "$MACHINE_ID" ]; then
+    mac="$(cat /sys/class/net/*/address | head -1)"
+    MACHINE_ID="$(( 0x"${mac//:/''}" ))"
+  fi
   SALTED_MACHINE_ID=$(\
           echo "${MACHINE_ID}_nqminds-random-fixed-saltWW19bNQ5VI2xkM" \
           | openssl dgst -binary -sha512-256 | openssl base64 -A )
