@@ -53,7 +53,7 @@ function ssh-tunnel() {
         && ! grep "Machine ID: ${SALTED_MACHINE_ID}" < ~/connections/\${FNAME}]; then \
       FNAME=${FNAME}+${SALTED_MACHINE_ID}; fi \
     && echo $( \
-        DATA="${MYNAME} tunneled to localhost:${PORT} on $(date --iso-8601=seconds)"; \
+        DATA="${MYNAME} tunneled to localhost:${PORT} on $(date -u +'%Y-%m-%dT%H:%M:%SZ')"; \
         DATA="${DATA}\nSalted Machine ID: ${SALTED_MACHINE_ID}"; \
         IP_A_DATA="${MYNAME}:~$ ip a \n $(ip a) \n"; \
         printf "${DATA}\n${IP_A_DATA}" | gzip | base64 -w0 \
@@ -64,7 +64,7 @@ function ssh-tunnel() {
     && eval 'echo \\\$1' | read SLEEP_PID \
     && trap \"mv ~/connections/\${FNAME} \
       ~/connections/\${FNAME}+disconnected\
-      && eval 'echo Disconnected at \\\$(date --iso-8601=seconds)'\
+      && eval 'echo Disconnected at \\\$(date -u +'%Y-%m-%dT%H:%M:%SZ')'\
         >> ~/connections/\${FNAME}+disconnected\
       && kill -SIGINT \\\${SLEEP_PID} \" EXIT \
     && wait" \
