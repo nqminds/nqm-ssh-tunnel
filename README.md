@@ -2,6 +2,49 @@
 
 Creates a reverse SSH tunnel to an SSH server.
 
+This allows for communication between two devices that are both behind a firewall, though the publically accesible Reverse SSH server.
+
+Each host creates a tunnel so that it's accessible via `localhost` on the reverse SSH server. This means that an SSH proxyjump can be used to SSH
+through the reverse SSH tunnel to the host.
+
+```mermaid
+flowchart RL
+    subgraph Host
+        R["Host SSH Port"]
+    end
+    subgraph Host2
+        R2["Host SSH Port"]
+    end
+    subgraph Host3
+        R3["Host SSH Port"]
+    end
+
+    subgraph Reverse SSH Server
+        subgraph localhost
+            P["Tunnel Port"]
+            P2["Tunnel Port"]
+            P3["Tunnel Port"]
+        end
+        subgraph public
+            serverPort["Server SSH Port"]
+        end
+    end
+
+    subgraph Client
+
+    end
+    P -.->|Reverse Tunnel| R
+    R -.->|Create Reverse Tunnel| serverPort
+    P --->|SSH| R
+
+    P2 -.->|Reverse Tunnel| R2
+
+    P3 -.->|Reverse Tunnel| R3
+
+    Client ---> |SSH| serverPort
+    serverPort ---> |SSH| P
+```
+
 ## Usage
 
 ### Setup
