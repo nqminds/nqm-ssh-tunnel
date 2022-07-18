@@ -2,17 +2,6 @@
 
 In order to enable NQM SSH tunnel as a service, you can run the following:
 
-```bash
-sudo systemctl start ssh-tunnel.service
-# run `sudo systemctl enable ssh-tunnel.service` to autorun on startup
-```
-
-If you want to choose a different destination, you can run the following:
-
-```bash
-systemctl start ssh-tunnel@<destination>.service
-```
-
 ## Rootless SSH tunnel
 
 You can run SSH tunnel without `sudo` by using a user systemd instance.
@@ -27,8 +16,8 @@ sudo loginctl enable-linger "$(whoami)"
 Then, you can start ssh-tunnel without `sudo` using:
 
 ```bash
-systemctl start ssh-tunnel.service
-# systemctl enable ssh-tunnel.service to auto run on startup
+systemctl --user start ssh-tunnel.service
+# systemctl --user enable ssh-tunnel.service to auto run on startup
 ```
 
 ### Viewing logs
