@@ -20,7 +20,7 @@ then you can create a passphrase-less key with:
 
 ```bash
 if [ ! -f ~/.ssh/id_ed25519 ]; then
-	ssh-keygen -t ed25519 -N "" -C "$(whoami)@$(hostname)" -f ~/.ssh/id_ed25519
+	ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f ~/.ssh/id_ed25519
 fi
 ```
 
