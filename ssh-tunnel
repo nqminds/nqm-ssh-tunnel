@@ -12,25 +12,32 @@ function ssh-global-options() {
 }
 
 function ssh-check() {
-  MYNAME="$(whoami)@$(hostname)"
+  MYNAME="$(id -u -n)@$(uname -n)"
   ssh_options=()
   ssh-global-options ssh_options
   ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
 }
 
 function ssh-tunnel() {
-  MACHINE_ID=$(cat /etc/machine-id)
+  MACHINE_ID=$(cat /var/lib/dbus/machine-id || true)
+  if [ -z "$MACHINE_ID" ]; then
+    mac="$(cat /sys/class/net/*/address | head -1)"
+    MACHINE_ID="$(( 0x"${mac//:/''}" ))"
+  fi
+  SALTED_MACHINE_ID_HEX=$(
+    echo "${MACHINE_ID}_nqminds-random-fixed-saltWW19bNQ5VI2xkM" | openssl dgst -hex -sha512-256 | grep -oE '[[:xdigit:]]{64}'
+  )
   SALTED_MACHINE_ID=$(\
           echo "${MACHINE_ID}_nqminds-random-fixed-saltWW19bNQ5VI2xkM" \
-          | shasum -a 512256 | xxd -r -p | base64 -w0)
+          | openssl dgst -binary -sha512-256 | openssl base64 -A )
 
   # default tunnel port in 49152-65535 fixed on machine id
-  PORT=$((0x$MACHINE_ID%16383 + 49152))
+  PORT=$((0x$SALTED_MACHINE_ID_HEX%16383 + 49152))
 
   # see https://tools.ietf.org/html/rfc3548#page-6 for base64 in filenames
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"/"/"_"}
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"+"/"-"}
-  MYNAME="$(whoami)@$(hostname)"
+  MYNAME="$(id -u -n)@$(uname -n)"
 
   # keep on running ssh tunnel until we don't have a listen port failure
 
@@ -53,7 +60,7 @@ function ssh-tunnel() {
         && ! grep "Machine ID: ${SALTED_MACHINE_ID}" < ~/connections/\${FNAME}]; then \
       FNAME=${FNAME}+${SALTED_MACHINE_ID}; fi \
     && echo $( \
-        DATA="${MYNAME} tunneled to localhost:${PORT} on $(date --iso-8601=seconds)"; \
+        DATA="${MYNAME} tunneled to localhost:${PORT} on $(date -u +'%Y-%m-%dT%H:%M:%SZ')"; \
         DATA="${DATA}\nSalted Machine ID: ${SALTED_MACHINE_ID}"; \
         IP_A_DATA="${MYNAME}:~$ ip a \n $(ip a) \n"; \
         printf "${DATA}\n${IP_A_DATA}" | gzip | base64 -w0 \
@@ -64,7 +71,7 @@ function ssh-tunnel() {
     && eval 'echo \\\$1' | read SLEEP_PID \
     && trap \"mv ~/connections/\${FNAME} \
       ~/connections/\${FNAME}+disconnected\
-      && eval 'echo Disconnected at \\\$(date --iso-8601=seconds)'\
+      && eval 'echo Disconnected at \\\$(date -u +'%Y-%m-%dT%H:%M:%SZ')'\
         >> ~/connections/\${FNAME}+disconnected\
       && kill -SIGINT \\\${SLEEP_PID} \" EXIT \
     && wait" \
