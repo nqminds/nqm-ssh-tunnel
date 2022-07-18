@@ -15,7 +15,7 @@ StartLimitBurst=3
 
 Type=simple
 
-ExecStart=/usr/bin/ssh-tunnel --destination %I
+ExecStart=/usr/bin/ssh-tunnel --destination %i
 
 # try to restart and find an SSH connection
 # restarts until StartLimits are hit

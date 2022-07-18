@@ -20,6 +20,13 @@ systemctl --user start ssh-tunnel.service
 # systemctl --user enable ssh-tunnel.service to auto run on startup
 ```
 
+If you want to start an ssh-tunnel to another server, make sure to add
+the server to `/etc/ssh-tunnel/ssh-tunnel.config` or `~/.ssh/config`, then run
+
+```bash
+systemctl --user start ssh-tunnel@the-name-of-your-server-here.service
+```
+
 ### Viewing logs
 
 If you ever want to view the logs of the reverse SSH service, you can do this
