@@ -4,15 +4,15 @@ Creates a reverse SSH tunnel to an SSH server.
 
 ## Usage
 
-### Setup
+### Setup on host device
 
-First, configure your `~/.ssh/config` to contain the username and hostname of the
-SSH server:
+First, configure your `~/.ssh/config` or `/etc/ssh-tunnel/ssh-tunnel.config` to
+contain the username and hostname of the SSH server:
 
 ```conf
 Host nqminds-iot-hub-ssh-control
         HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com # change this
-        User ubuntu # change this
+        User ssh-tunnel # change this
 ```
 
 Next, if you do not have a public key configured (e.g. `ls ~/.ssh/*.pub` returns no such file),
@@ -24,7 +24,8 @@ if [ ! -f ~/.ssh/id_ed25519 ]; then
 fi
 ```
 
-Then, you can run add the public key (from `cat ~/.ssh/id_ed25519.pub`) to the SSH server.
+Next, copy your public key from `cat ~/.ssh/id_ed25519.pub` and add it to the
+`~/.ssh/authorized_keys` file on the server (see below).
 
 Finally, you can run the following command to create the SSH tunnel:
 
@@ -33,15 +34,37 @@ Finally, you can run the following command to create the SSH tunnel:
 ./ssh-tunnel # creates the SSH tunnel (use --destination to specify the server)
 ```
 
-### Finding the tunnel
+### Setup on reverse SSH server
 
-When you connect to the SSH server, you will find a folder called `connections`.
-Each file will have the name of a connected reverse SSH host, of format `<username>@<hostname>:<port>`, e.g.
+Then, you can run add the public key (from `cat ~/.ssh/id_ed25519.pub`) to the SSH server,
+by adding it to `/home/my-loging-username-here/.ssh/authorized_keys`.
+
+If the file does not exist, you can create it.
+
+#### Securing the reverse SSH server
+
+We highly recommned that you lockdown the reverse SSH server, as reverse SSHers
+only need minimal permissions.
+
+See [./doc/ssh-tunnel-server.md](./doc/ssh-tunnel-server.md) on the recommended
+security practices.
+
+### Connecting from your client device
+
+When you connect to the SSH server, you will find a folder called `connections`,
+in the home directory of the SSH tunnel user.
+
+Each file will have the name of a connected reverse SSH host, of format `<username>@<hostname>:<port>`.
+
+For example, assuming the reverse SSH tunnel is using the username `ssh-tunnel`,
+you can find all the connections by doing:
 
 ```console
-ubuntu@nqminds-iot-hub-ssh-control $ ls connections/
+ubuntu@nqminds-iot-hub-ssh-control $ ls /home/ssh-tunnel/connections/
 alexandru@dazzling-dream:48106
 ```
+
+_Hint: Ignore `+disconnected` files with `ls --ignore '*+disconnected'`_
 
 You can then connect to one of the hosts via `ssh <username>@localhost -p <port>`.
 The port is normally constant.
@@ -50,9 +73,9 @@ The only time it changes is if the port is already in use when an SSH client con
 Because the port is constant, you can use the following config to jump straight to a reverse-SSHed device,
 from your local PC, in your `~/.ssh/config` file, to just run `ssh dazzling-dream`:
 
-```config
+```conf
 # The SSH Reverse Server
-Host amazonhubnqm
+Host nqminds-iot-hub-ssh-control
 	HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com
 	User ubuntu
 
@@ -60,8 +83,11 @@ Host dazzling-dream
 	HostName localhost
 	User alexandru
 	Port 48106 # this is the port you will see when you run ls connections/ on the server
-	ProxyJump amazonhubnqm # we "Jump" through the SSH reverse server
+	ProxyJump nqminds-iot-hub-ssh-control # we "Jump" through the SSH reverse server
 ```
+
+If you do get a connection error, first try SSHing into the `nqminds-iot-hub-ssh-control`
+and checking that the reverse SSH tunnel actually exists.
 
 ### OS specific instructions
 
