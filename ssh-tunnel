@@ -140,7 +140,11 @@ case $1 in
     exit 0
     ;;
 -d|--destination)
-    destination="$2"
+    if [ -z "$2" ]; then
+      echo "Warning: Ignoring empty --destination and keeping '$destination'." >&2
+    else
+      destination="$2"
+    fi
     shift
     ;;
 --check)
