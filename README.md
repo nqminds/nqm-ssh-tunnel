@@ -34,7 +34,7 @@ flowchart RL
 
     end
     P -.->|Reverse Tunnel| R
-    R -.->|Create Reverse Tunnel| serverPort
+    Host --->|Create Reverse Tunnel| serverPort
     P --->|SSH| R
 
     P2 -.->|Reverse Tunnel| R2
