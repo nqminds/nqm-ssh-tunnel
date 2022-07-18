@@ -48,7 +48,7 @@ function ssh-tunnel() {
   ssh_options=(
     # description of ssh flags at https://manpages.ubuntu.com/manpages/jammy/man1/ssh.1.html
     "-tt" # force tty (so that `trap` works properly to monitor the tunnel)
-    "-o" "RemoteForward=localhost:${PORT} localhost:22"
+    "-o" "RemoteForward=localhost:${PORT} localhost:${host_port}"
   )
   ssh-global-options ssh_options
 
@@ -94,6 +94,7 @@ function ssh-tunnel() {
 
 destination=nqminds-iot-hub-ssh-control
 config="/etc/ssh-tunnel/ssh-tunnel.config"
+host_port=22
 check=0
 
 help_text="Usage: $(basename "$0") [OPTIONS] [DESTINATION]
@@ -117,6 +118,7 @@ Options:
   -d, --destination: The destination to SSH to.
                      Defaults to nqminds-iot-hub-ssh-control
                      in your ssh_config file.
+  -P, --host-port PORT    The host port to tunnel to. Defaults to port $host_port.
   --check:           Checks to see if SSH can be used to connect to the target.
                      Creates a file called '~/connections/<hostname>.test' to check
                      for permission errors.
@@ -130,7 +132,7 @@ showHelp() {
   echo 2>&1 "$help_text"
 }
 
-options=$(getopt -l "help,destination:,check,config:" -o "h,d:" -- "$@")
+options=$(getopt -l "help,destination:,check,config:,host-port:" -o "h,d:,P:" -- "$@")
 eval set -- "$options"
 
 while [ "$1" ]; do
@@ -145,6 +147,10 @@ case $1 in
     else
       destination="$2"
     fi
+    shift
+    ;;
+-P|--host-port)
+    host_port="$2"
     shift
     ;;
 --check)
