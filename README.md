@@ -1,11 +1,33 @@
 # NQM SSH Tunnel
 
-Creates a reverse SSH tunnel to an SSH server.
+Automatic reverse SSH tunnel for multiple IoT devices.
 
-This allows for communication between two devices that are both behind a firewall, though the publically accesible Reverse SSH server.
+This allows for communication between two devices that are both behind a firewall,
+through the publically accesible Reverse SSH server.
 
-Each host creates a tunnel so that it's accessible via `localhost` on the reverse SSH server. This means that an SSH proxyjump can be used to SSH
+Each host creates a tunnel so that it's accessible via `localhost` on the
+reverse SSH server. This means that an SSH proxyjump can be used to SSH
 through the reverse SSH tunnel to the host.
+
+Importantly, each host creates a file on the server's `~/connections` folder
+that contains the port number of the local tunnel port. This means that you
+can deploy this `ssh-tunnel` script on multiple devices, and have them all
+use unique ports automatically.
+
+## Contents
+
+- [How it works](./doc/HOW-IT-WORKS.md)
+- [Usage](#usage)
+  - [Setup on host device](#setup-on-host-device)
+  - [Setup on reverse SSH server](#setup-on-reverse-ssh-server)
+  - [Connecting from your client device](#connecting-from-your-client-device)
+- [OS specific instructions](#os-specific-instructions)
+  - [Building packages](./doc/Building-packages.md)
+  - [Debian/Ubuntu](./debian/README.md)
+
+## How it works
+
+See [How it works](./doc/HOW-IT-WORKS.md) for full details.
 
 ```mermaid
 flowchart RL
