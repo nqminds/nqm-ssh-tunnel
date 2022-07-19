@@ -6,9 +6,9 @@ a network. This allows one to remotely access and control a computer.
 
 In order to access a computer via SSH, one needs:
 
- - the username
- - the correct private key (or password)
- - the location of the computer on the network
+- the username
+- the correct private key (or password)
+- the location of the computer on the network
 
 Example usuage (using OpenSSH on Linux):
 
