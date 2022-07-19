@@ -25,3 +25,7 @@ repos:
     -   id: forbid-binary
     -   id: script-must-have-extension
     -   id: script-must-not-have-extension
+-   repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.4
+    hooks:
+    -   id: shellcheck
