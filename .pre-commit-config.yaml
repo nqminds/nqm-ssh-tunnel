@@ -19,3 +19,9 @@ repos:
     -   id: check-shebang-scripts-are-executable
     -   id: check-symlinks
     -   id: destroyed-symlinks
+-   repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 2.1.6
+    hooks:
+    -   id: forbid-binary
+    -   id: script-must-have-extension
+    -   id: script-must-not-have-extension
