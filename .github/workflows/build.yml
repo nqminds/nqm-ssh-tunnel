@@ -1,0 +1,95 @@
+on:
+  release:
+    types:
+      - created
+      - edited # can remove once CI is confirmed working
+  push:
+  pull_request:
+    branches: [ main, master ]
+
+name: Build
+
+jobs:
+  build-deb:
+    name: Build Debian Package
+    # building a deb is super slow, but we're a public repo now, so it's free!!
+    runs-on: [ubuntu-20.04]
+    strategy:
+      matrix:
+        distribution: [focal]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache pbuilder base
+        id: cache-pbuilder-base
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/cache/pbuilder/base.tgz
+          key: ${{ runner.os }}-${{ matrix.distribution }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install pbuilder debhelper -y
+      - name: Setup pdebuilderrc for cross-compiling
+        env:
+          PBUILDER_RC: |
+            # Faster than default, and is requried if we want to do cross-compiling
+            PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
+        run: |
+          echo "$PBUILDER_RC" | sudo tee -a /etc/pbuilderrc
+      - name: Build pbuilder base.tgz
+        if: steps.cache-pbuilder-base.outputs.cache-hit != 'true'
+        run: |
+          sudo pbuilder create --distribution ${{ matrix.distribution }} --debootstrapopts --variant=buildd
+      - name: Build .deb
+        run: |
+          mkdir -p '${{ runner.temp }}/pbuilder/result'
+          pdebuild --buildresult '${{ runner.temp }}/pbuilder/result' --debbuildopts "-us -uc" -- --distribution ${{ matrix.distribution }}
+      - name: Archive built debs
+        uses: actions/upload-artifact@v2
+        with:
+          name: built-debs
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/pbuilder/result/*.deb
+      - name: Upload debs as Release Assets
+        # only run action if this is being run from a GitHub Release
+        if: ${{ github.event_name == 'release' }}
+        uses: actions/github-script@v5
+        env:
+          PBUILDER_RESULT_DIR: '${{ runner.temp }}/pbuilder/result'
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs').promises;
+            const {basename, join} = require("path");
+
+            const globber = await glob.create(join(process.env.PBUILDER_RESULT_DIR, "*.deb"));
+            const files = await globber.glob();
+
+            for (const filePath of files) {
+              console.log(`Uploading ${filePath}`);
+              const filePromise = fs.readFile(filePath);
+              // Determine content-length for header to upload asset
+              const {size: contentLength} = await fs.stat(filePath);
+              // Setup headers for API call, see Octokit Documentation:
+              // https://octokit.github.io/rest.js/#octokit-routes-repos-upload-release-asset for more information
+              const headers = {
+                'content-type': "application/vnd.debian.binary-package",
+                'content-length': contentLength,
+              };
+              // Upload a release asset
+              // API Documentation: https://developer.github.com/v3/repos/releases/#upload-a-release-asset
+              // Octokit Documentation: https://octokit.github.io/rest.js/v18#repos-upload-release-asset
+              try {
+                const uploadAssetResponse = await github.rest.repos.uploadReleaseAsset({
+                  url: context.payload.release.upload_url,
+                  headers,
+                  name: basename(filePath),
+                  file: await filePromise,
+                });
+              } catch (error) {
+                // upload errors are usually since the file already exists
+                console.error(`[skipped] Uploading ${basename(filePath)} failed: ${error}`);
+              }
+            }
