@@ -1,5 +1,7 @@
 # SSH Legion
+
 [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/nqminds/nqm-ssh-tunnel?include_prereleases)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
+[![Build](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml/badge.svg)](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml)
 
 Automatic reverse SSH tunnel for multiple IoT devices.
 
@@ -67,6 +69,16 @@ flowchart RL
     Client ---> |SSH| serverPort
     serverPort ---> |SSH| P
 ```
+
+## Installing
+
+You can just copy the bash script to your computer, but we recommend using
+a package that contains init-scripts.
+
+- Debian/Ubuntu
+  - `.deb`s can be found at [On the Releases page](https://github.com/nqminds/nqm-ssh-tunnel/releases)
+  - Altenatively, you can download an automatically built `.deb` from
+    the [GitHub Actions - Build workflow page](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml?query=branch%3Amaster)
 
 ## Usage
 
