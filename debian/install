@@ -1,2 +1,2 @@
-ssh-tunnel usr/bin
-ssh-tunnel.config etc/ssh-tunnel
+ssh-legion usr/bin
+ssh-legion.config etc/ssh-legion

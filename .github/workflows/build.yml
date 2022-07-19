@@ -114,9 +114,9 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: built-debs
-      - name: Install ssh-tunnel from .deb
+      - name: Install ssh-legion from .deb
         run: |
-          sudo apt-get install ./ssh-tunnel_*_all.deb -y
+          sudo apt-get install ./ssh-legion_*_all.deb -y
       - name: Create config
         env:
           ssh_tunnel_config: |
@@ -128,22 +128,22 @@ jobs:
               StrictHostKeyChecking=no
         run: |
           ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f key_from_github
-          echo "${ssh_tunnel_config}" > local-ssh-tunnel.config
+          echo "${ssh_tunnel_config}" > local-ssh-legion.config
       - name: Run Local SSH Server in background
         id: start-podman-ssh-server
         run: |
-          podman stop reverse-ssh-tunnel-server || true
+          podman stop reverse-ssh-legion-server || true
           podman run --rm --detach \
-            --name=reverse-ssh-tunnel-server \
+            --name=reverse-ssh-legion-server \
             --publish 2222:2222 \
             --env PUBLIC_KEY="$(cat ./key_from_github.pub)" \
             lscr.io/linuxserver/openssh-server:latest
           # linuxserver/openssh-server doesn't have a healthcheck command
           # so we just wait a few seconds for the server to start
           sleep 5
-      - name: Run SSH-Tunnel check
+      - name: Run ssh-legion check
         run: |
-          ssh-tunnel --check --config local-ssh-tunnel.config --destination ssh-server
+          ssh-legion --check --config local-ssh-legion.config --destination ssh-server
       - name: Stop Podman SSH Server
         if: ${{ always() && steps.start-podman-ssh-server.conclusion == 'success' }}
-        run: podman stop reverse-ssh-tunnel-server
+        run: podman stop reverse-ssh-legion-server
