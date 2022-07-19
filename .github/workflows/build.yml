@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Make cache dir
+        # needed because otherwise actions/cache throws a permission error
+        run: sudo mkdir --mode a=rwx --parents /var/cache/pbuilder
       - name: Cache pbuilder base
         id: cache-pbuilder-base
         uses: actions/cache@v2
