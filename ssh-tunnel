@@ -52,18 +52,21 @@ function ssh-tunnel() {
   )
   ssh-global-options ssh_options
 
+  # used on purpose to send FNAME to the remote side
+  # shellcheck disable=SC2029
+
   while FNAME="${MYNAME}:${PORT}" \
     && ssh "${ssh_options[@]}" "${destination}" \
     "mkdir -p ~/connections \
-    && FNAME=${FNAME} \
+    && FNAME=$(printf '%q' "${FNAME}") \
     && if [ -f ~/connections/\${FNAME} \
-        && ! grep "Machine ID: ${SALTED_MACHINE_ID}" < ~/connections/\${FNAME}]; then \
+        && ! grep \"Machine ID: ${SALTED_MACHINE_ID}\" < ~/connections/\${FNAME}]; then \
       FNAME=${FNAME}+${SALTED_MACHINE_ID}; fi \
     && echo $( \
         DATA="${MYNAME} tunneled to localhost:${PORT} on $(date -u +'%Y-%m-%dT%H:%M:%SZ')"; \
         DATA="${DATA}\nSalted Machine ID: ${SALTED_MACHINE_ID}"; \
         IP_A_DATA="${MYNAME}:~$ ip a \n $(ip a) \n"; \
-        printf "${DATA}\n${IP_A_DATA}" | gzip | base64 -w0 \
+        printf "%s\n%s" "${DATA}" "${IP_A_DATA}" | gzip | base64 -w0 \
       ) \
       | base64 -d | gunzip > ~/connections/\${FNAME} \
     && rm -f ~/connections/\${FNAME}+disconnected \
@@ -81,13 +84,13 @@ function ssh-tunnel() {
     # Try using random ports until one works.
 
     # we want a port between 1024 and 65535, range of 64511 numbers
-    R=$(($RANDOM%64511))
+    R=$((RANDOM%64511))
     # our random port
-    PORT=$(($R+1024))
+    PORT=$((R+1024))
     # make sure the PORT isn't in the list of IANA registered ports
     while grep "${PORT}/tcp" /etc/services; do
       # find a new random port
-      R=$(($RANDOM%64511)); PORT=$(($R+1024))
+      R=$((RANDOM%64511)); PORT=$((R+1024))
     done
   done
 }
