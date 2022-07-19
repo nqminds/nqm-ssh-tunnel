@@ -72,25 +72,17 @@ flowchart RL
 ### Setup on host device
 
 First, configure your `~/.ssh/config` or `/etc/ssh-tunnel/ssh-tunnel.config` to
-contain the username and hostname of the SSH server:
+contain the username and hostname of the SSH server. Or, just copy the contents
+of the included [`ssh-tunnel.config`](./ssh-tunnel.config).
 
 ```conf
 Host nqminds-iot-hub-ssh-control
-        HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com # change this
-        User ssh-tunnel # change this
+        HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com
+        User ssh-tunnel
 ```
 
-Next, if you do not have a public key configured (e.g. `ls ~/.ssh/*.pub` returns no such file),
-then you can create a passphrase-less key with:
-
-```bash
-if [ ! -f ~/.ssh/id_ed25519 ]; then
-	ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f ~/.ssh/id_ed25519
-fi
-```
-
-Next, copy your public key from `cat ~/.ssh/id_ed25519.pub` and add it to the
-`~/.ssh/authorized_keys` file on the server (see below).
+Next, run `./ssh-tunnel --view-key --check`. This will output your `~/.ssh/id_ed25519.pub` public key, creating it if it does not exist. You can then
+add it to the `~/.ssh/authorized_keys` file on the server (see below).
 
 Finally, you can run the following command to create the SSH tunnel:
 

@@ -95,10 +95,21 @@ function ssh-tunnel() {
   done
 }
 
+function view-key() {
+  if [ ! -f ~/.ssh/id_ed25519 ]; then
+    ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f ~/.ssh/id_ed25519
+  fi
+  reset='\033[0m'       # Text Reset
+  cyan='\033[0;36m'         # Cyan
+  echo -e "${cyan}Info: Ouputing ~/.ssh/id_ed25519.pub, please add to your server's ~/.ssh/authorized_keys file.${reset}" >&2
+  cat ~/.ssh/id_ed25519.pub
+}
+
 destination=nqminds-iot-hub-ssh-control
 config="/etc/ssh-tunnel/ssh-tunnel.config"
 host_port=22
 check=0
+view_key=0
 
 help_text="Usage: $(basename "$0") [OPTIONS] [DESTINATION]
 
@@ -125,6 +136,8 @@ Options:
   --check:           Checks to see if SSH can be used to connect to the target.
                      Creates a file called '~/connections/<hostname>.test' to check
                      for permission errors.
+  --view-key         Outputs the ~/.ssh/id_ed25519.pub.
+                     Creates the file if it does not already exist.
   -c, --config:      Specify a custom ssh_config file.
                      Defaults to $config.
                      Ignored if this file doesn't exist or cannot be read.
@@ -135,7 +148,7 @@ showHelp() {
   echo 2>&1 "$help_text"
 }
 
-options=$(getopt -l "help,destination:,check,config:,host-port:" -o "h,d:,P:" -- "$@")
+options=$(getopt -l "help,destination:,check,config:,host-port:,view-key" -o "h,d:,P:" -- "$@")
 eval set -- "$options"
 
 while [ "$1" ]; do
@@ -168,6 +181,9 @@ case $1 in
     fi
     shift
     ;;
+--view-key)
+    view_key=1
+    ;;
 --)
     shift
     break;;
@@ -183,10 +199,15 @@ done
 export destination="${destination}"
 export config="$config"
 
+if [ "$view_key" -ne 0 ]; then
+  view-key
+fi
+
 if [ "$check" -ne 0 ]; then
   ssh-check
   exit "$?"
 fi
+
 ssh-tunnel
 
 echo 2>&1 "$(basename "$0") --destination ${destination} failed"
