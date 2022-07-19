@@ -1,4 +1,5 @@
 # SSH Legion
+[![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/nqminds/nqm-ssh-tunnel?include_prereleases)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
 
 Automatic reverse SSH tunnel for multiple IoT devices.
 
