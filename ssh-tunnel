@@ -171,7 +171,6 @@ case $1 in
     ;;
 --check)
     check=1
-    shift
     ;;
 --config)
     if [ -r "$2" ]; then
