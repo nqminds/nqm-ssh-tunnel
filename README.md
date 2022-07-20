@@ -1,4 +1,4 @@
-# NQM SSH Tunnel
+# SSH Legion
 
 Automatic reverse SSH tunnel for multiple IoT devices.
 
