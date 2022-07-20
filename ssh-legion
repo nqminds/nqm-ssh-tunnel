@@ -21,7 +21,7 @@ function ssh-check() {
   ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
 }
 
-function ssh-tunnel() {
+function ssh-legion() {
   MACHINE_ID=$(cat /var/lib/dbus/machine-id || true)
   if [ -z "$MACHINE_ID" ]; then
     mac="$(cat /sys/class/net/*/address | head -1)"
@@ -109,7 +109,7 @@ function view-key() {
 }
 
 destination=nqminds-iot-hub-ssh-control
-config="/etc/ssh-tunnel/ssh-tunnel.config"
+config="/etc/ssh-legion/ssh-legion.config"
 host_port=22
 check=0
 view_key=0
@@ -210,8 +210,8 @@ if [ "$check" -ne 0 ]; then
   exit "$?"
 fi
 
-ssh-tunnel
+ssh-legion
 
 echo 2>&1 "$(basename "$0") --destination ${destination} failed"
-# always return failure since ssh-tunnel should never end
+# always return failure since ssh-legion should never end
 exit 1

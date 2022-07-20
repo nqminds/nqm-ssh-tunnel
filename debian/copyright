@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: nqm-ssh-tunnel
+Upstream-Name: nqm-ssh-legion
 Upstream-Contact: Alois Klink <alois@nquiringminds.com>
-Source: https://github.com/nqminds/nqm-ssh-tunnel
+Source: https://github.com/nqminds/nqm-ssh-legion
 
 Files: *
 Copyright: 2019-2022, NquiringMinds Ltd.

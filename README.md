@@ -11,7 +11,7 @@ through the reverse SSH tunnel to the host.
 
 Importantly, each host creates a file on the server's `~/connections` folder
 that contains the port number of the local tunnel port. This means that you
-can deploy this `ssh-tunnel` script on multiple devices, and have them all
+can deploy this `ssh-legion` script on multiple devices, and have them all
 use unique ports automatically.
 
 ## Contents
@@ -71,24 +71,24 @@ flowchart RL
 
 ### Setup on host device
 
-First, configure your `~/.ssh/config` or `/etc/ssh-tunnel/ssh-tunnel.config` to
+First, configure your `~/.ssh/config` or `/etc/ssh-legion/ssh-legion.config` to
 contain the username and hostname of the SSH server. Or, just copy the contents
-of the included [`ssh-tunnel.config`](./ssh-tunnel.config).
+of the included [`ssh-legion.config`](./ssh-legion.config).
 
 ```conf
 Host nqminds-iot-hub-ssh-control
         HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com
-        User ssh-tunnel
+        User ssh-legion
 ```
 
-Next, run `./ssh-tunnel --view-key --check`. This will output your `~/.ssh/id_ed25519.pub` public key, creating it if it does not exist. You can then
+Next, run `./ssh-legion --view-key --check`. This will output your `~/.ssh/id_ed25519.pub` public key, creating it if it does not exist. You can then
 add it to the `~/.ssh/authorized_keys` file on the server (see below).
 
 Finally, you can run the following command to create the SSH tunnel:
 
 ```bash
-./ssh-tunnel --check # checks to see if the SSH tunnel works
-./ssh-tunnel # creates the SSH tunnel (use --destination to specify the server)
+./ssh-legion --check # checks to see if the SSH tunnel works
+./ssh-legion # creates the SSH tunnel (use --destination to specify the server)
 ```
 
 ### Setup on reverse SSH server
@@ -103,7 +103,7 @@ If the file does not exist, you can create it.
 We highly recommned that you lockdown the reverse SSH server, as reverse SSHers
 only need minimal permissions.
 
-See [./doc/ssh-tunnel-server.md](./doc/ssh-tunnel-server.md) on the recommended
+See [./doc/ssh-legion-server.md](./doc/ssh-legion-server.md) on the recommended
 security practices.
 
 ### Connecting from your client device
@@ -113,11 +113,11 @@ in the home directory of the SSH tunnel user.
 
 Each file will have the name of a connected reverse SSH host, of format `<username>@<hostname>:<port>`.
 
-For example, assuming the reverse SSH tunnel is using the username `ssh-tunnel`,
+For example, assuming the reverse SSH tunnel is using the username `ssh-legion`,
 you can find all the connections by doing:
 
 ```console
-ubuntu@nqminds-iot-hub-ssh-control $ ls /home/ssh-tunnel/connections/
+ubuntu@nqminds-iot-hub-ssh-control $ ls /home/ssh-legion/connections/
 alexandru@dazzling-dream:48106
 ```
 
@@ -148,7 +148,7 @@ and checking that the reverse SSH tunnel actually exists.
 
 ### OS specific instructions
 
-To build `ssh-tunnel` for specific operating systems, see [Building packages](./doc/Building-packages.md)
+To build `ssh-legion` for specific operating systems, see [Building packages](./doc/Building-packages.md)
 
 For OS specific usage instructions, see:
 

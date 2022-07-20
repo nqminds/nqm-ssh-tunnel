@@ -2,24 +2,24 @@
 
 Recommended secure config for the Nquiringminds's SSH Tunnel Server.
 
-The following instructions creates a new user called `ssh-tunnel` on your server.
-A chroot jail is then created at `/home/ssh-tunnel/chroot-jail` containing
-only the files required for the ssh-tunnel script to work.
+The following instructions creates a new user called `ssh-legion` on your server.
+A chroot jail is then created at `/home/ssh-legion/chroot-jail` containing
+only the files required for the ssh-legion script to work.
 
 Finally, the `/etc/ssh/sshd_config` SSH config is modified so that ssh-ing
-into the `ssh-tunnel` will always lead into the Chroot Jail.
+into the `ssh-legion` will always lead into the Chroot Jail.
 
 ### Create Chroot Jail
 
 ```bash
-# creates /home/ssh-tunnel
-sudo adduser --system ssh-tunnel --shell /usr/bin/bash
-sudo -u ssh-tunnel mkdir --parents /home/ssh-tunnel/.ssh
-chroot="/home/ssh-tunnel/chroot-jail"
+# creates /home/ssh-legion
+sudo adduser --system ssh-legion --shell /usr/bin/bash
+sudo -u ssh-legion mkdir --parents /home/ssh-legion/.ssh
+chroot="/home/ssh-legion/chroot-jail"
 # The path to the chroot-jail must be owned by root
-sudo chown root:root /home/ssh-tunnel
-sudo -u ssh-tunnel touch /home/ssh-tunnel/.ssh/authorized_keys
-sudo -u ssh-tunnel chmod 600 /home/ssh-tunnel/.ssh/authorized_keys
+sudo chown root:root /home/ssh-legion
+sudo -u ssh-legion touch /home/ssh-legion/.ssh/authorized_keys
+sudo -u ssh-legion chmod 600 /home/ssh-legion/.ssh/authorized_keys
 
 function create_chroot_jail() {
     chroot_folder="$1"
@@ -29,11 +29,11 @@ function create_chroot_jail() {
         exit 1
     fi
 
-    sudo mkdir --parents "$chroot"/{dev,usr/bin,lib/x86_64-linux-gnu,lib64,home/ssh-tunnel/connections}
+    sudo mkdir --parents "$chroot"/{dev,usr/bin,lib/x86_64-linux-gnu,lib64,home/ssh-legion/connections}
     # chroot jail must be owned by root
     sudo chown --recursive root:root "$chroot"
     sudo chmod 0755 "$chroot"
-    sudo chown --recursive ssh-tunnel "$chroot"/home/ssh-tunnel/connections
+    sudo chown --recursive ssh-legion "$chroot"/home/ssh-legion/connections
 
     function copy_symlinks_to_file() {
         file="$1"
@@ -67,11 +67,11 @@ function create_chroot_jail() {
     sudo mknod "$chroot/dev/tty"  c 5 0
     sudo chmod 0666 "$chroot"/dev/{null,tty,zero}
     sudo chown root.tty "$chroot"/dev/tty
-    # sudo mount -t devtmpfs none /home/ssh-tunnel/chroot-jail/dev
+    # sudo mount -t devtmpfs none /home/ssh-legion/chroot-jail/dev
 }
 
 create_chroot_jail "$chroot"
-ln -s "$chroot"/home/ssh-tunnel/connections /home/ssh-tunnel/connections
+ln -s "$chroot"/home/ssh-legion/connections /home/ssh-legion/connections
 ```
 
 ### `/etc/ssh/sshd_config` config
@@ -81,6 +81,6 @@ Then, add the following file to your `/etc/ssh/sshd_config` file:
 ```conf
 # warning, this does not work from /etc/ssh/sshd_config/*.conf
 # in OpenSSH <= 8.4, see https://bugzilla.mindrot.org/show_bug.cgi?id=3122
-Match User ssh-tunnel
+Match User ssh-legion
     ChrootDirectory %h/chroot-jail
 ```
