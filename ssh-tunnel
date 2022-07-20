@@ -2,6 +2,9 @@
 #
 # Creates an SSH Tunnel to the specified server.
 
+reset='\033[0m'       # Text Reset
+cyan='\033[0;36m'         # Cyan
+
 # Adds SSH options to the given array.
 function ssh-global-options() {
   # Bash 4.3+ nameref https://www.gnu.org/software/bash/manual/html_node/Shell-Parameters.html
@@ -52,6 +55,8 @@ function ssh-tunnel() {
   )
   ssh-global-options ssh_options
 
+  echo -e "${cyan}Info: Creating tunnel to ${destination}, use CTRL+C to cancel.${reset}" >&2
+
   # used on purpose to send FNAME to the remote side
   # shellcheck disable=SC2029
 
@@ -99,8 +104,6 @@ function view-key() {
   if [ ! -f ~/.ssh/id_ed25519 ]; then
     ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f ~/.ssh/id_ed25519
   fi
-  reset='\033[0m'       # Text Reset
-  cyan='\033[0;36m'         # Cyan
   echo -e "${cyan}Info: Ouputing ~/.ssh/id_ed25519.pub, please add to your server's ~/.ssh/authorized_keys file.${reset}" >&2
   cat ~/.ssh/id_ed25519.pub
 }
