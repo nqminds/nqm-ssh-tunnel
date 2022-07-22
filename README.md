@@ -113,11 +113,11 @@ in the home directory of the SSH tunnel user.
 
 Each file will have the name of a connected reverse SSH host, of format `<username>@<hostname>:<port>`.
 
-For example, assuming the reverse SSH tunnel is using the username `ssh-legion`,
+For example, assuming the reverse SSH tunnel is using the username `ssh-tunnel`,
 you can find all the connections by doing:
 
 ```console
-ubuntu@nqminds-iot-hub-ssh-control $ ls /home/ssh-legion/connections/
+ubuntu@nqminds-iot-hub-ssh-control $ ls /home/ssh-tunnel/connections/
 alexandru@dazzling-dream:48106
 ```
 
@@ -134,7 +134,7 @@ from your local PC, in your `~/.ssh/config` file, to just run `ssh dazzling-drea
 # The SSH Reverse Server
 Host nqminds-iot-hub-ssh-control
 	HostName ec2-34-251-158-148.eu-west-1.compute.amazonaws.com
-	User ubuntu
+	User ssh-tunnel
 
 Host dazzling-dream
 	HostName localhost
