@@ -1,5 +1,5 @@
-ssh-legion (0.1.0) UNRELEASED; urgency=low
+ssh-legion (0.1.0) stable; urgency=low
 
   * Initial release.
 
- -- Alois Klink <alois@nquiringminds.com>  Mon, 20 Jun 2022 20:55:38 +0100
+ -- Alois Klink <alois@nquiringminds.com>  Wed, 22 Jul 2022 11:08:38 +0100
