@@ -20,6 +20,7 @@ use unique ports automatically.
 ## Contents
 
 - [How it works](./doc/HOW-IT-WORKS.md)
+- [Installing](#installing)
 - [Usage](#usage)
   - [Setup on host device](#setup-on-host-device)
   - [Setup on reverse SSH server](#setup-on-reverse-ssh-server)
