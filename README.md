@@ -20,6 +20,7 @@ use unique ports automatically.
 ## Contents
 
 - [How it works](./doc/HOW-IT-WORKS.md)
+- [Installing](#installing)
 - [Usage](#usage)
   - [Setup on host device](#setup-on-host-device)
   - [Setup on reverse SSH server](#setup-on-reverse-ssh-server)
@@ -27,6 +28,7 @@ use unique ports automatically.
 - [OS specific instructions](#os-specific-instructions)
   - [Building packages](./doc/Building-packages.md)
   - [Debian/Ubuntu](./debian/README.md)
+  - [OpenWRT](./docs/OpenWRT.md)
 
 ## How it works
 
@@ -79,6 +81,11 @@ a package that contains init-scripts.
   - `.deb`s can be found at [On the Releases page](https://github.com/nqminds/nqm-ssh-tunnel/releases)
   - Altenatively, you can download an automatically built `.deb` from
     the [GitHub Actions - Build workflow page](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml?query=branch%3Amaster)
+- OpenWRT
+  - `.ipk`s can be found at [On the Releases page](https://github.com/nqminds/nqm-ssh-tunnel/releases)
+  - Altenatively, you can download an automatically built `.ipk` from
+    the [@nqminds/manysecured-openwrt-packages GitHub Actions - Test Build workflow page](https://github.com/nqminds/manysecured-openwrt-packages/actions/workflows/build.yml)
+  - Or, you can use [@nqminds/manysecured-openwrt-packages feed](https://github.com/nqminds/manysecured-openwrt-packages) to build your own `.ipk` using the OpenWRT SDK/buildroot.
 
 ## Usage
 
@@ -166,3 +173,4 @@ To build `ssh-legion` for specific operating systems, see [Building packages](./
 For OS specific usage instructions, see:
 
 - [Debian/Ubuntu](./debian/README.md)
+- [OpenWRT](./docs/OpenWRT.md)
