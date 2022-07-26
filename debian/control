@@ -13,7 +13,8 @@ Package: ssh-legion
 Architecture: all
 Depends:
  openssh-client,
- bash (>= 4.3)
+ bash (>= 4.3),
+ openssl (>= 1.1.1)
 Description: Automatic reverse SSH tunnel for multiple IoT devices.
  Automatically sets up a reverse SSH tunnel to a remote host through a
  publically accesible Reverse SSH server.

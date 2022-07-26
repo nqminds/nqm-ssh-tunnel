@@ -1,3 +1,9 @@
+ssh-legion (0.1.1) UNRELEASED; urgency=low
+
+  * Add missing dependency on openssl 1.1.1
+
+ -- Alois Klink <alois@nquiringminds.com>  Tue, 26 Jul 2022 18:40:00 +0100
+
 ssh-legion (0.1.0) stable; urgency=low
 
   * Initial release.
