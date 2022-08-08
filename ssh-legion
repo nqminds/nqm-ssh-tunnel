@@ -108,7 +108,7 @@ EOF
     "mkdir -p ~/connections"
     "FNAME=${FNAME@Q}" # FNAME is loaded from create-tunnel!
     "SALTED_MACHINE_ID=${SALTED_MACHINE_ID@Q}"
-    'if [ -f ~/connections/"${FNAME}" && ! grep "Machine ID: ${SALTED_MACHINE_ID}" < ~/connections/"${FNAME}"]; then \
+    'if [ -f ~/connections/"${FNAME}" ] && ! grep "Machine ID: ${SALTED_MACHINE_ID}" < ~/connections/"${FNAME}"; then \
     FNAME="${FNAME}+${SALTED_MACHINE_ID}"; fi'
     "echo -n ${COMPRESSED_INFO@Q} | base64 -d | gunzip > ~/connections/\${FNAME}"
     'rm -f ~/connections/"${FNAME}+disconnected"'
