@@ -49,7 +49,7 @@ function create_chroot_jail() {
             sudo cp --verbose --parents --archive "$file" "$output_dir"
         done
     }
-    copy_binaries=(bash /bin/sh printf base64 gunzip gzip mkdir rm sleep date mv touch)
+    copy_binaries=(bash /bin/sh printf base64 grep gunzip gzip mkdir rm sleep date mv touch)
     for binary in $(ldd $(which "${copy_binaries[@]}")|grep -v dynamic|cut -d " " -f 3|sed 's/://'|sort|uniq)
     do
         copy_symlinks_to_file "$binary" "$chroot"
