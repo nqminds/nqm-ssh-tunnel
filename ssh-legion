@@ -22,8 +22,10 @@ function ssh-check() {
 }
 
 function ssh-legion() {
-  MACHINE_ID=$(cat /var/lib/dbus/machine-id || true)
-  if [ -z "$MACHINE_ID" ]; then
+  if [ -f /var/lib/dbus/machine-id ]; then
+    MACHINE_ID=$(cat /var/lib/dbus/machine-id)
+  else
+    echo -e "${cyan}Info: No dbus machine-id found, creating one from mac addresses.${reset}"
     mac="$(cat /sys/class/net/*/address | head -1)"
     MACHINE_ID="$(( 0x"${mac//:/''}" ))"
   fi
