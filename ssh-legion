@@ -75,6 +75,19 @@ function ssh-legion() {
   done
 }
 
+# Joins an array by the given delimiter
+#
+# ```bash
+# array=(a b c)
+# csv="$(join-array ',' "${array[@]}")"
+# echo "$csv" # prints 'a,b,c'
+# ```
+#
+# Args:
+#   - delimiter The delimiter, can be multiple chars
+#   - ...array The arra The array
+#
+# Adapted from Nicholas Sushkin (trivial/CC BY-SA 4.0) https://stackoverflow.com/a/17841619/10149169
 function join-array() {
   local delimiter="$1"
   local first_array_val="$2"
@@ -82,12 +95,25 @@ function join-array() {
   printf %s "$first_array_val" "${@/#/$delimiter}"
 }
 
+# Creates the SSH Tunnel to the server
+#
+# If the ssh-tunnel ever outputs `"Error: remote port forwarding failed for listen port"`,
+# then this function returns with `EX_UNAVAILABLE`.
+# If this happens, you should try creating the SSH tunnel again with a different port.
+#
+# Otherwise, it returns with `0` (success), even the error is becasue ssh failed for some other reason
+#
+# Args:
+#   - PORT The server port to tunnel to this device.
+#   - HOST_PORT The port on this device to tunnel to.
+#   - DESTINATION The server name in your ssh config.
 function ssh-tunnel() {
   local PORT="$1"
   local HOST_PORT="$2"
   local DESTINATION="$3"
 
   # this data will be stored in the ~/connections/... file on the reverse SSH server
+  # this data will only be updated when the tunnel restarts (so might be weeks)
   local INFO
   INFO="$(
     cat << EOF
@@ -101,6 +127,7 @@ EOF
 
   FNAME="${MYNAME}:${PORT}"
 
+  # These commands will be combined with `\n` and run on the Reverse SSH server
   local SERVER_COMMANDS
   # shellcheck disable=SC2016
   SERVER_COMMANDS=(
@@ -112,7 +139,7 @@ EOF
     FNAME="${FNAME}+${SALTED_MACHINE_ID}"; fi'
     "echo -n ${COMPRESSED_INFO@Q} | base64 -d | gunzip > ~/connections/\${FNAME}"
     'rm -f ~/connections/"${FNAME}+disconnected"'
-    'sleep infinity&'
+    'sleep infinity&' # Run sleep forever in background until killed by trap
     'SLEEP_PID="$!"'
     'on_disconnect() {
       mv ~/connections/"${FNAME}" ~/connections/"${FNAME}+disconnected"
@@ -121,7 +148,7 @@ EOF
       kill -SIGINT "$SLEEP_PID"
     }'
     'trap "on_disconnect ${SLEEP_PID}" EXIT'
-    'wait "${SLEEP_PID}"'
+    'wait "${SLEEP_PID}"' # Keep SSH active until sleep command or shell is killed
     # shellcheck enable=SC2016
   )
   server_commands_joined="$(join-array $'\n' "${SERVER_COMMANDS[@]}")"
@@ -131,7 +158,6 @@ EOF
   # putting localhost:${PORT} means the port is only accessible from localhost.
   # putting *:${PORT}, means the port is accessible from all interfaces, ie
   # going www.server.com:8080 will connect to the client:22
-
   ssh_options=(
     # description of ssh flags at https://manpages.ubuntu.com/manpages/jammy/man1/ssh.1.html
     "-tt" # force tty (so that `trap` works properly to monitor the tunnel)
