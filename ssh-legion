@@ -5,6 +5,10 @@
 reset='\033[0m'       # Text Reset
 cyan='\033[0;36m'         # Cyan
 
+# taken from sysexits.h
+# Used as a return code for when ssh-tunnel fails because the port is in use
+EX_UNAVAILABLE='69'
+
 # Adds SSH options to the given array.
 function ssh-global-options() {
   # Bash 4.3+ nameref https://www.gnu.org/software/bash/manual/html_node/Shell-Parameters.html
@@ -42,6 +46,86 @@ function ssh-legion() {
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"+"/"-"}
   MYNAME="$(id -u -n)@$(uname -n)"
 
+  echo -e "${cyan}Info: Creating tunnel to ${destination}, use CTRL+C to cancel.${reset}" >&2
+
+
+  # used on purpose to send FNAME to the remote side
+  # shellcheck disable=SC2029
+
+  while true; do
+    if ! ssh-tunnel "$PORT" "$host_port" "$destination"; then
+      # RemotePortForwarding Failed!
+      # Port already in use
+      # Try using random ports until one works.
+
+      # we want a port between 1024 and 65535, range of 64511 numbers
+      R=$((RANDOM%64511))
+      # our random port
+      PORT=$((R+1024))
+      # make sure the PORT isn't in the list of IANA registered ports
+      while grep "${PORT}/tcp" /etc/services; do
+        # find a new random port
+        R=$((RANDOM%64511)); PORT=$((R+1024))
+      done
+    else
+      # ssh closed for some other reason, try again in a second
+      true
+    fi
+    sleep 1
+  done
+}
+
+function join-array() {
+  local delimiter="${1-}" array="${2-}"
+  if shift 2; then
+    printf %s "$array" "${@/#/$delimiter}"
+  fi
+}
+
+function ssh-tunnel() {
+  local PORT="$1"
+  local HOST_PORT="$2"
+  local DESTINATION="$3"
+
+  # this data will be stored in the ~/connections/... file on the reverse SSH server
+  local INFO
+  INFO="$(
+    cat << EOF
+${MYNAME} tunneled to localhost:${PORT} on $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+Salted Machine ID: ${SALTED_MACHINE_ID}
+${MYNAME}:~$ ip a \n $(ip a)
+EOF
+  )"
+  local COMPRESSED_INFO
+  COMPRESSED_INFO="$(echo -n "$INFO" | gzip | base64 -w0)"
+
+  FNAME="${MYNAME}:${PORT}"
+
+  local SERVER_COMMANDS
+  # shellcheck disable=SC2016
+  SERVER_COMMANDS=(
+    "set -e" # error if any command fails
+    "mkdir -p ~/connections"
+    "FNAME=${FNAME@Q}" # FNAME is loaded from create-tunnel!
+    "SALTED_MACHINE_ID=${SALTED_MACHINE_ID@Q}"
+    'if [ -f ~/connections/"${FNAME}" && ! grep "Machine ID: ${SALTED_MACHINE_ID}" < ~/connections/"${FNAME}"]; then \
+    FNAME="${FNAME}+${SALTED_MACHINE_ID}"; fi'
+    "echo -n ${COMPRESSED_INFO@Q} | base64 -d | gunzip > ~/connections/\${FNAME}"
+    'rm -f ~/connections/"${FNAME}+disconnected"'
+    'sleep infinity&'
+    'SLEEP_PID="$!"'
+    'on_disconnect() {
+      mv ~/connections/"${FNAME}" ~/connections/"${FNAME}+disconnected"
+      echo "Disconnected at $(date -u "+%Y-%m-%dT%H:%M:%SZ")" >> ~/connections/"${FNAME}+disconnected"
+      local SLEEP_PID="$1"
+      kill -SIGINT "$SLEEP_PID"
+    }'
+    'trap "on_disconnect ${SLEEP_PID}" EXIT'
+    'wait "${SLEEP_PID}"'
+    # shellcheck enable=SC2016
+  )
+  server_commands_joined="$(join-array $'\n' "${SERVER_COMMANDS[@]}")"
+
   # keep on running ssh tunnel until we don't have a listen port failure
 
   # putting localhost:${PORT} means the port is only accessible from localhost.
@@ -51,53 +135,15 @@ function ssh-legion() {
   ssh_options=(
     # description of ssh flags at https://manpages.ubuntu.com/manpages/jammy/man1/ssh.1.html
     "-tt" # force tty (so that `trap` works properly to monitor the tunnel)
-    "-o" "RemoteForward=localhost:${PORT} localhost:${host_port}"
+    "-o" "RemoteForward=localhost:${PORT} localhost:${HOST_PORT}"
   )
   ssh-global-options ssh_options
 
-  echo -e "${cyan}Info: Creating tunnel to ${destination}, use CTRL+C to cancel.${reset}" >&2
-
-  # used on purpose to send FNAME to the remote side
   # shellcheck disable=SC2029
-
-  while FNAME="${MYNAME}:${PORT}" \
-    && ssh "${ssh_options[@]}" "${destination}" \
-    "mkdir -p ~/connections \
-    && FNAME=$(printf '%q' "${FNAME}") \
-    && if [ -f ~/connections/\${FNAME} \
-        && ! grep \"Machine ID: ${SALTED_MACHINE_ID}\" < ~/connections/\${FNAME}]; then \
-      FNAME=${FNAME}+${SALTED_MACHINE_ID}; fi \
-    && echo $( \
-        DATA="${MYNAME} tunneled to localhost:${PORT} on $(date -u +'%Y-%m-%dT%H:%M:%SZ')"; \
-        DATA="${DATA}\nSalted Machine ID: ${SALTED_MACHINE_ID}"; \
-        IP_A_DATA="${MYNAME}:~$ ip a \n $(ip a) \n"; \
-        printf "%s\n%s" "${DATA}" "${IP_A_DATA}" | gzip | base64 -w0 \
-      ) \
-      | base64 -d | gunzip > ~/connections/\${FNAME} \
-    && rm -f ~/connections/\${FNAME}+disconnected \
-    && eval 'sleep infinity&' \
-    && eval 'echo \\\$1' | read SLEEP_PID \
-    && trap \"mv ~/connections/\${FNAME} \
-      ~/connections/\${FNAME}+disconnected\
-      && eval 'echo Disconnected at \\\$(date -u +'%Y-%m-%dT%H:%M:%SZ')'\
-        >> ~/connections/\${FNAME}+disconnected\
-      && kill -SIGINT \\\${SLEEP_PID} \" EXIT \
-    && wait" \
-  |& grep "Error: remote port forwarding failed for listen port"; do
-    # RemotePortForwarding Failed!
-    # Port already in use
-    # Try using random ports until one works.
-
-    # we want a port between 1024 and 65535, range of 64511 numbers
-    R=$((RANDOM%64511))
-    # our random port
-    PORT=$((R+1024))
-    # make sure the PORT isn't in the list of IANA registered ports
-    while grep "${PORT}/tcp" /etc/services; do
-      # find a new random port
-      R=$((RANDOM%64511)); PORT=$((R+1024))
-    done
-  done
+  if ssh "${ssh_options[@]}" "${DESTINATION}" "$server_commands_joined" 2>&1 >/dev/null | tee /dev/stderr | grep -q "Error: remote port forwarding failed for listen port"; then
+    # we need to change the port
+    return "$EX_UNAVAILABLE"
+  fi
 }
 
 function view-key() {
