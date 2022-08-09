@@ -26,7 +26,13 @@ function ssh-check() {
   ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
 }
 
+# Main function for ssh-legion
+#
+# Args:
+#   - CONNECTION_TIME Passed to `ssh-tunnel`
 function ssh-legion() {
+  local CONNECTION_TIME="${1-""}"
+
   if [ -f /var/lib/dbus/machine-id ]; then
     MACHINE_ID=$(cat /var/lib/dbus/machine-id)
   else
@@ -51,12 +57,11 @@ function ssh-legion() {
 
   echo -e "${cyan}Info: Creating tunnel to ${destination}, use CTRL+C to cancel.${reset}" >&2
 
-
   # used on purpose to send FNAME to the remote side
   # shellcheck disable=SC2029
 
   while true; do
-    if ! ssh-tunnel "$PORT" "$host_port" "$destination"; then
+    if ! ssh-tunnel "$PORT" "$host_port" "$destination" "$CONNECTION_TIME"; then
       # RemotePortForwarding Failed!
       # Port already in use
       echo -e "${yellow} Tunneling from port ${PORT} ${destination} failed, retrying with a random port.${reset}" >&2
@@ -111,10 +116,13 @@ function join-array() {
 #   - PORT The server port to tunnel to this device.
 #   - HOST_PORT The port on this device to tunnel to.
 #   - DESTINATION The server name in your ssh config.
+#   - CONNECTION_TIME How long to keep the SSH tunnel connection open for
+#                     We recommend `infinity` normally (assuming your server supports GNU sleep)
 function ssh-tunnel() {
   local PORT="$1"
   local HOST_PORT="$2"
   local DESTINATION="$3"
+  local CONNECTION_TIME="${4:-"infinity"}"
 
   # this data will be stored in the ~/connections/... file on the reverse SSH server
   # this data will only be updated when the tunnel restarts (so might be weeks)
@@ -143,7 +151,7 @@ EOF
     FNAME="${FNAME}+${SALTED_MACHINE_ID}"; fi'
     "echo -n ${COMPRESSED_INFO@Q} | base64 -d | gunzip > ~/connections/\${FNAME}"
     'rm -f ~/connections/"${FNAME}+disconnected"'
-    'sleep infinity&' # Run sleep forever in background until killed by trap
+    "sleep ${CONNECTION_TIME@Q} &" # Run sleep forever in background until killed by trap
     'SLEEP_PID="$!"'
     'on_disconnect() {
       mv ~/connections/"${FNAME}" ~/connections/"${FNAME}+disconnected"
