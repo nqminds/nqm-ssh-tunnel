@@ -166,6 +166,8 @@ EOF
     # description of ssh flags at https://manpages.ubuntu.com/manpages/jammy/man1/ssh.1.html
     "-tt" # force tty (so that `trap` works properly to monitor the tunnel)
     "-o" "RemoteForward=localhost:${PORT} localhost:${HOST_PORT}"
+    # SSH will terminate connection if SSH tunnel fails
+    "-o" "ExitOnForwardFailure=yes"
   )
   ssh-global-options ssh_options
 
