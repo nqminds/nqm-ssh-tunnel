@@ -20,10 +20,16 @@ function ssh-global-options() {
 }
 
 function ssh-check() {
-  MYNAME="$(id -u -n)@$(uname -n)"
-  ssh_options=()
-  ssh-global-options ssh_options
-  ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
+  local CONNECTION_TIME="1s"
+  local RETRY_ON_SUCCESS_EXIT="0"
+  # run ssh-legion for 1s only, then exit
+
+  if ssh-legion "$CONNECTION_TIME" "$RETRY_ON_SUCCESS_EXIT"; then
+    echo -e "${cyan}Info: Testing SSH tunnel connection to ${destination} succeeded." >&2
+  else
+    echo -e "${cyan}Info: Testing SSH tunnel connection to ${destination} failed." >&2
+    return 1
+  fi
 }
 
 # Main function for ssh-legion
