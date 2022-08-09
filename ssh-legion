@@ -330,13 +330,16 @@ function main() {
   exit 1
 }
 
-# On signal, removes trap for signal to all processes in this process group
-# This is needed for older init systems (e.g. openwrt) to correctly close `ssh`
-# when running `/etc/init.rc/... stop`
-trap "log-info 'Caught SIGTERM, exiting...' && trap - SIGTERM && kill -TERM -- 0" SIGTERM
-trap "log-info 'Caught SIGINT, exiting...' && trap - SIGINT && kill -INT -- 0" SIGINT
-
 # Run the main script in the background
 # Otherwise our `trap`s only get called once the ssh-tunnel script fails
 main &
-wait "$!"
+
+main_pid="$!"
+
+# On signal, removes trap for signal to all processes in this process group
+# This is needed for older init systems (e.g. openwrt) to correctly close `ssh`
+# when running `/etc/init.rc/... stop`
+trap 'log-info "Caught SIGTERM, exiting..." && trap - SIGTERM && kill -TERM -- $(ps -o pid= --ppid "$main_pid") "$main_pid"' SIGTERM
+trap 'log-info "Caught SIGINT, exiting..." && trap - SIGINT && kill -INT -- $(ps -o pid= --ppid "$main_pid") "$main_pid"' SIGINT
+
+wait "$main_pid"
