@@ -3,7 +3,8 @@
 # Creates an SSH Tunnel to the specified server.
 
 reset='\033[0m'       # Text Reset
-cyan='\033[0;36m'         # Cyan
+cyan='\033[0;36m'     # Cyan
+yellow='\033[33m'     # yellow
 
 # taken from sysexits.h
 # Used as a return code for when ssh-tunnel fails because the port is in use
@@ -58,6 +59,7 @@ function ssh-legion() {
     if ! ssh-tunnel "$PORT" "$host_port" "$destination"; then
       # RemotePortForwarding Failed!
       # Port already in use
+      echo -e "${yellow} Tunneling from port ${PORT} ${destination} failed, retrying with a random port.${reset}" >&2
       # Try using random ports until one works.
 
       # we want a port between 1024 and 65535, range of 64511 numbers
