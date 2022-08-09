@@ -30,8 +30,12 @@ function ssh-check() {
 #
 # Args:
 #   - CONNECTION_TIME Passed to `ssh-tunnel`
+#   - RETRY_ON_SUCCESS_EXIT If set to 1 (default), automatically restart the SSH tunnel should it ever
+#                           exit. Normally, it will only restart if it exits due to the port being
+#                           used already.
 function ssh-legion() {
   local CONNECTION_TIME="${1-""}"
+  local RETRY_ON_SUCCESS_EXIT="${2-"1"}"
 
   if [ -f /var/lib/dbus/machine-id ]; then
     MACHINE_ID=$(cat /var/lib/dbus/machine-id)
@@ -76,9 +80,12 @@ function ssh-legion() {
         # find a new random port
         R=$((RANDOM%64511)); PORT=$((R+1024))
       done
-    else
+    elif [ "${RETRY_ON_SUCCESS_EXIT}" -eq 1 ]; then
       # ssh closed for some other reason, try again in a second
       true
+    else
+      # exit ssh-legion
+      break
     fi
     sleep 1
   done
