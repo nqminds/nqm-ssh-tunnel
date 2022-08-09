@@ -2,9 +2,10 @@
 #
 # Creates an SSH Tunnel to the specified server.
 
-reset='\033[0m'       # Text Reset
-cyan='\033[0;36m'     # Cyan
-yellow='\033[33m'     # yellow
+reset=$'\033[0m'       # Text Reset
+cyan=$'\033[0;36m'     # Cyan
+yellow=$'\033[0;33m'   # yellow
+red=$'\033[0;31m'      # red
 
 # taken from sysexits.h
 # Used as a return code for when ssh-tunnel fails because the port is in use
@@ -19,18 +20,46 @@ function ssh-global-options() {
   fi
 }
 
-function ssh-check() {
-  MYNAME="$(id -u -n)@$(uname -n)"
-  ssh_options=()
-  ssh-global-options ssh_options
-  ssh "${ssh_options[@]}" "${destination}" 'mkdir -p ~/connections && touch ~/connections/'"${MYNAME}.test"
+function log-info() {
+  echo "${cyan}Info: ${1}${reset}" >&2
 }
 
+function log-warning() {
+  echo "${yellow}Warning: ${1}${reset}" >&2
+}
+
+function log-error() {
+  echo "${red}Error: ${1}${reset}" >&2
+}
+
+function ssh-check() {
+  local CONNECTION_TIME="1s"
+  local RETRY_ON_SUCCESS_EXIT="0"
+  # run ssh-legion for 1s only, then exit
+
+  if ssh-legion "$CONNECTION_TIME" "$RETRY_ON_SUCCESS_EXIT"; then
+    log-info "Testing SSH tunnel connection to ${destination} succeeded."
+  else
+    log-error "Testing SSH tunnel connection to ${destination} failed."
+    return 1
+  fi
+}
+
+# Main function for ssh-legion
+#
+# Args:
+#   - CONNECTION_TIME Passed to `ssh-tunnel`
+#   - RETRY_ON_SUCCESS_EXIT If set to 1 (default), automatically restart the SSH tunnel should it ever
+#                           exit. Normally, it will only restart if it exits due to the port being
+#                           used already.
 function ssh-legion() {
+  local CONNECTION_TIME="${1-""}"
+  local RETRY_ON_SUCCESS_EXIT="${2-"1"}"
+
   if [ -f /var/lib/dbus/machine-id ]; then
     MACHINE_ID=$(cat /var/lib/dbus/machine-id)
   else
-    echo -e "${cyan}Info: No dbus machine-id found, creating one from mac addresses.${reset}"
+    log-info 'No dbus machine-id found, creating one from mac addresses.'
     mac="$(cat /sys/class/net/*/address | head -1)"
     MACHINE_ID="$(( 0x"${mac//:/''}" ))"
   fi
@@ -49,17 +78,16 @@ function ssh-legion() {
   SALTED_MACHINE_ID=${SALTED_MACHINE_ID//"+"/"-"}
   MYNAME="$(id -u -n)@$(uname -n)"
 
-  echo -e "${cyan}Info: Creating tunnel to ${destination}, use CTRL+C to cancel.${reset}" >&2
-
+  log-info "Creating tunnel to ${destination}, use CTRL+C to cancel."
 
   # used on purpose to send FNAME to the remote side
   # shellcheck disable=SC2029
 
   while true; do
-    if ! ssh-tunnel "$PORT" "$host_port" "$destination"; then
+    if ! ssh-tunnel "$PORT" "$host_port" "$destination" "$CONNECTION_TIME"; then
       # RemotePortForwarding Failed!
       # Port already in use
-      echo -e "${yellow} Tunneling from port ${PORT} ${destination} failed, retrying with a random port.${reset}" >&2
+      log-warning "Tunneling from port ${PORT} ${destination} failed, retrying with a random port."
       # Try using random ports until one works.
 
       # we want a port between 1024 and 65535, range of 64511 numbers
@@ -71,9 +99,12 @@ function ssh-legion() {
         # find a new random port
         R=$((RANDOM%64511)); PORT=$((R+1024))
       done
-    else
+    elif [ "${RETRY_ON_SUCCESS_EXIT}" -eq 1 ]; then
       # ssh closed for some other reason, try again in a second
-      true
+      log-warning "SSH connection closed, restarting in a few seconds ..."
+    else
+      # exit ssh-legion
+      break
     fi
     sleep 1
   done
@@ -111,10 +142,13 @@ function join-array() {
 #   - PORT The server port to tunnel to this device.
 #   - HOST_PORT The port on this device to tunnel to.
 #   - DESTINATION The server name in your ssh config.
+#   - CONNECTION_TIME How long to keep the SSH tunnel connection open for
+#                     We recommend `infinity` normally (assuming your server supports GNU sleep)
 function ssh-tunnel() {
   local PORT="$1"
   local HOST_PORT="$2"
   local DESTINATION="$3"
+  local CONNECTION_TIME="${4:-"infinity"}"
 
   # this data will be stored in the ~/connections/... file on the reverse SSH server
   # this data will only be updated when the tunnel restarts (so might be weeks)
@@ -143,7 +177,7 @@ EOF
     FNAME="${FNAME}+${SALTED_MACHINE_ID}"; fi'
     "echo -n ${COMPRESSED_INFO@Q} | base64 -d | gunzip > ~/connections/\${FNAME}"
     'rm -f ~/connections/"${FNAME}+disconnected"'
-    'sleep infinity&' # Run sleep forever in background until killed by trap
+    "sleep ${CONNECTION_TIME@Q} &" # Run sleep forever in background until killed by trap
     'SLEEP_PID="$!"'
     'on_disconnect() {
       mv ~/connections/"${FNAME}" ~/connections/"${FNAME}+disconnected"
@@ -166,6 +200,8 @@ EOF
     # description of ssh flags at https://manpages.ubuntu.com/manpages/jammy/man1/ssh.1.html
     "-tt" # force tty (so that `trap` works properly to monitor the tunnel)
     "-o" "RemoteForward=localhost:${PORT} localhost:${HOST_PORT}"
+    # SSH will terminate connection if SSH tunnel fails
+    "-o" "ExitOnForwardFailure=yes"
   )
   ssh-global-options ssh_options
 
@@ -180,7 +216,7 @@ function view-key() {
   if [ ! -f ~/.ssh/id_ed25519 ]; then
     ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f ~/.ssh/id_ed25519
   fi
-  echo -e "${cyan}Info: Ouputing ~/.ssh/id_ed25519.pub, please add to your server's ~/.ssh/authorized_keys file.${reset}" >&2
+  log-info "Ouputing ~/.ssh/id_ed25519.pub, please add to your server's ~/.ssh/authorized_keys file."
   cat ~/.ssh/id_ed25519.pub
 }
 
