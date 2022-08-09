@@ -5,6 +5,7 @@
 reset=$'\033[0m'       # Text Reset
 cyan=$'\033[0;36m'     # Cyan
 yellow=$'\033[0;33m'   # yellow
+red=$'\033[0;31m'      # red
 
 # taken from sysexits.h
 # Used as a return code for when ssh-tunnel fails because the port is in use
@@ -27,6 +28,10 @@ function log-warning() {
   echo "${yellow}Warning: ${1}${reset}" >&2
 }
 
+function log-error() {
+  echo "${red}Error: ${1}${reset}" >&2
+}
+
 function ssh-check() {
   local CONNECTION_TIME="1s"
   local RETRY_ON_SUCCESS_EXIT="0"
@@ -35,7 +40,7 @@ function ssh-check() {
   if ssh-legion "$CONNECTION_TIME" "$RETRY_ON_SUCCESS_EXIT"; then
     log-info "Testing SSH tunnel connection to ${destination} succeeded."
   else
-    log-info "Testing SSH tunnel connection to ${destination} failed."
+    log-error "Testing SSH tunnel connection to ${destination} failed."
     return 1
   fi
 }
