@@ -80,6 +80,10 @@ function ssh-legion() {
 
   log-info "Creating tunnel to ${destination}, use CTRL+C to cancel."
 
+  # seed bash's random number generator with the initial port
+  # this means that ssh-legion will always try to use the same ports
+  RANDOM="$PORT"
+
   while true; do
     if ! ssh-tunnel "$PORT" "$host_port" "$destination" "$CONNECTION_TIME"; then
       # RemotePortForwarding Failed!
