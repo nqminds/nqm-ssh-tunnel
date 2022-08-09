@@ -92,13 +92,11 @@ function ssh-legion() {
       # Try using random ports until one works.
 
       # we want a port between 1024 and 65535, range of 64511 numbers
-      R=$((RANDOM%64511))
-      # our random port
-      PORT=$((R+1024))
+      PORT=$((RANDOM % 64511 + 1024))
       # make sure the PORT isn't in the list of IANA registered ports
       while grep "${PORT}/tcp" /etc/services; do
         # find a new random port
-        R=$((RANDOM%64511)); PORT=$((R+1024))
+        PORT=$((RANDOM % 64511 + 1024))
       done
     elif [ "${RETRY_ON_SUCCESS_EXIT}" -eq 1 ]; then
       # ssh closed for some other reason, try again in a second
