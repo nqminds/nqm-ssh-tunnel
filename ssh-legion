@@ -80,9 +80,6 @@ function ssh-legion() {
 
   log-info "Creating tunnel to ${destination}, use CTRL+C to cancel."
 
-  # used on purpose to send FNAME to the remote side
-  # shellcheck disable=SC2029
-
   while true; do
     if ! ssh-tunnel "$PORT" "$host_port" "$destination" "$CONNECTION_TIME"; then
       # RemotePortForwarding Failed!
