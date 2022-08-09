@@ -129,6 +129,14 @@ jobs:
         run: |
           ssh-keygen -t ed25519 -N "" -C "$(id -u -n)@$(uname -n)" -f key_from_github
           echo "${ssh_tunnel_config}" > local-ssh-legion.config
+      - name: Create Docker image
+        env:
+          dockerfile: |
+            FROM lscr.io/linuxserver/openssh-server:latest
+            # Enable SSH tunneling (remote only)
+            RUN sed -i 's/^.*AllowTcpForwarding .*$/AllowTcpForwarding remote/g' /etc/ssh/sshd_config
+        run: |
+          echo "${dockerfile}" | podman build --file="-" --tag=reverse-ssh-legion-server
       - name: Run Local SSH Server in background
         id: start-podman-ssh-server
         run: |
@@ -137,7 +145,7 @@ jobs:
             --name=reverse-ssh-legion-server \
             --publish 2222:2222 \
             --env PUBLIC_KEY="$(cat ./key_from_github.pub)" \
-            lscr.io/linuxserver/openssh-server:latest
+            reverse-ssh-legion-server
           # linuxserver/openssh-server doesn't have a healthcheck command
           # so we just wait a few seconds for the server to start
           sleep 5
