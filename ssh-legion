@@ -101,7 +101,7 @@ function ssh-legion() {
       done
     elif [ "${RETRY_ON_SUCCESS_EXIT}" -eq 1 ]; then
       # ssh closed for some other reason, try again in a second
-      true
+      log-warning "SSH connection closed, restarting in a few seconds ..."
     else
       # exit ssh-legion
       break
