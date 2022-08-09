@@ -142,6 +142,7 @@ jobs:
           # so we just wait a few seconds for the server to start
           sleep 5
       - name: Run ssh-legion check
+        timeout-minutes: 1
         run: |
           ssh-legion --check --config local-ssh-legion.config --destination ssh-server
       - name: Stop Podman SSH Server
