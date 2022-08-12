@@ -84,3 +84,17 @@ Then, add the following file to your `/etc/ssh/sshd_config` file:
 Match User ssh-tunnel
     ChrootDirectory %h/chroot-jail
 ```
+
+You may also wish to set the `ClientAliveInterval` option.
+The server's `TCPKeepAlive` is enabled by default, but normally
+takes over 2 hours to kill a dead SSH connection (moving it to `+disconnected`).
+
+Setting `ClientAliveInterval` and `ClientAliveCountMax` can
+greatly decrease this time.
+
+```conf
+# Check once every 5 minutes for 3x before killing dead clients
+# TCPKeepAlive normally takes 2 hours+ before killing
+ClientAliveInterval 300
+ClientAliveCountMax 3
+```
