@@ -209,7 +209,7 @@ EOF
   if (
       # shellcheck disable=SC2029 # escape on server side
       ssh "${ssh_options[@]}" "${DESTINATION}" "$server_commands_joined" 2>&1 1>&"$ssh_stdout" \
-      | tee /dev/fd/"$ssh_stderr" | grep -q "Error: remote port forwarding failed for listen port"
+      | tee >( cat 1>&"$ssh_stderr" ) | grep -q "Error: remote port forwarding failed for listen port"
     ) {ssh_stdout}>&1 {ssh_stderr}>&2
   then
     # we need to change the port
