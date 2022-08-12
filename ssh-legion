@@ -316,13 +316,29 @@ if [ "$view_key" -ne 0 ]; then
   view-key
 fi
 
-if [ "$check" -ne 0 ]; then
-  ssh-check
-  exit "$?"
-fi
+function main() {
+  if [ "$check" -ne 0 ]; then
+    ssh-check
+    exit "$?"
+  fi
 
-ssh-legion
+  ssh-legion
 
-echo 2>&1 "$(basename "$0") --destination ${destination} failed"
-# always return failure since ssh-legion should never end
-exit 1
+  echo 2>&1 "$(basename "$0") --destination ${destination} failed"
+  # always return failure since ssh-legion should never end
+  exit 1
+}
+
+# Run the main script in the background
+# Otherwise our `trap`s only get called once the ssh-tunnel script fails
+main &
+
+main_pid="$!"
+
+# On signal, removes trap for signal to all processes in this process group
+# This is needed for older init systems (e.g. openwrt) to correctly close `ssh`
+# when running `/etc/init.rc/... stop`
+trap 'log-info "Caught SIGTERM, exiting..." && trap - SIGTERM && kill -TERM -- $(ps -o pid= --ppid "$main_pid") "$main_pid"' SIGTERM
+trap 'log-info "Caught SIGINT, exiting..." && trap - SIGINT && kill -INT -- $(ps -o pid= --ppid "$main_pid") "$main_pid"' SIGINT
+
+wait "$main_pid"
