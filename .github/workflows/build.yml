@@ -153,6 +153,10 @@ jobs:
         timeout-minutes: 1
         run: |
           ssh-legion --check --config local-ssh-legion.config --destination ssh-server
+      - name: Test for user@hostname:<port>+disconnected file
+        run: |
+          # ~ and * are quoted since they're expanded on the server, not locally
+          ssh -F local-ssh-legion.config ssh-server test -f "~/connections/$(whoami)@$(hostname):*+disconnected"
       - name: Stop Podman SSH Server
         if: ${{ always() && steps.start-podman-ssh-server.conclusion == 'success' }}
         run: podman stop reverse-ssh-legion-server
