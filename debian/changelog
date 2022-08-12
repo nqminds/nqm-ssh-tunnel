@@ -1,3 +1,24 @@
+ssh-legion (0.1.2) stable; urgency=low
+
+  [ Alois Klink ]
+  * fix(debian): fix invalid service files
+    These files were incorrectly called `.config`,
+    and were therefore not being installed properly.
+  * fix: suppress `cat` error on missing machine-id
+  * feat: warn when picking a random ssh tunnel port
+  * Improve the `ssh-legion --check` function
+    It now actually tests whether a tunnel can be created.
+  * fix: seed RANDOM number generator with machine id.
+    ssh-legion will now always try to use the same ports.
+  * fix: close child processes on SIGTERM/SIGINT
+    Required for OpenWRT and other simpler init systems.
+  * fix: log ssh stdout/err to ssh-legion stdout/err
+    Improves logging, especially with systemd-journald
+  * fix: kill SLEEP_PID only if it exists
+    Suppresses an error message when running the `--check` cmd.
+
+ -- Alois Klink <alois@nquiringminds.com>  Fri, 12 Aug 2022 14:16:20 +0100
+
 ssh-legion (0.1.1) stable; urgency=low
 
   * Add missing dependency on openssl 1.1.1
