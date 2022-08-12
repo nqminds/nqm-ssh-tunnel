@@ -182,7 +182,10 @@ EOF
       mv ~/connections/"${FNAME}" ~/connections/"${FNAME}+disconnected"
       echo "Disconnected at $(date -u "+%Y-%m-%dT%H:%M:%SZ")" >> ~/connections/"${FNAME}+disconnected"
       local SLEEP_PID="$1"
-      kill -SIGINT "$SLEEP_PID"
+      if [ -n "${SLEEP_PID}" -a -d "/proc/${SLEEP_PID}" ]; then
+        # kill `sleep ${CONNECTION_TIME@Q}` command if it exists
+        kill -SIGINT "$SLEEP_PID"
+      fi
     }'
     'trap "on_disconnect ${SLEEP_PID}" EXIT'
     'wait "${SLEEP_PID}"' # Keep SSH active until sleep command or shell is killed
