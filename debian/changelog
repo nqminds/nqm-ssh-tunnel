@@ -1,3 +1,13 @@
+ssh-legion (0.1.3) stable; urgency=medium
+
+  [ Alois Klink ]
+  * build(debian): bump minimum bash version to v4.4
+  * fix: fix ssh-legion not closing `ssh` on SIGTERM
+    Fixes on OpenWRT, where running `/etc/init.d/ssh-legion stop`
+    would not actually stop the underlying SSH tunnel.
+
+ -- Alois Klink <alois@nquiringminds.com>  Mon, 22 Aug 2022 09:23:05 +0100
+
 ssh-legion (0.1.2) stable; urgency=low
 
   [ Alois Klink ]
