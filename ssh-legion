@@ -209,11 +209,11 @@ EOF
 
   # pipe stderr through grep to see if SSH fails
   # also pipe stdout and stderr to ssh-legion's stdout/stderr for debugging
-  if (
+  if {
       # shellcheck disable=SC2029 # escape on server side
       ssh "${ssh_options[@]}" "${DESTINATION}" "$server_commands_joined" 2>&1 1>&"$ssh_stdout" \
       | tee >( cat 1>&"$ssh_stderr" ) | grep -q "Error: remote port forwarding failed for listen port"
-    ) {ssh_stdout}>&1 {ssh_stderr}>&2
+    } {ssh_stdout}>&1 {ssh_stderr}>&2
   then
     # we need to change the port
     return "$EX_UNAVAILABLE"
