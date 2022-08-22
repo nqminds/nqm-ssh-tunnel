@@ -2,6 +2,7 @@
 
 [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/nqminds/nqm-ssh-tunnel?include_prereleases)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
 [![Build](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml/badge.svg)](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml)
+[![GitHub Liscense](https://img.shields.io/github/license/nqminds/ssh-legion)](https://github.com/nqminds/ssh-legion/blob/master/LICENSE.md)
 
 Automatic reverse SSH tunnel for multiple IoT devices.
 
