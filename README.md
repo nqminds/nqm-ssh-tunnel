@@ -28,7 +28,7 @@ use unique ports automatically.
 - [OS specific instructions](#os-specific-instructions)
   - [Building packages](./doc/Building-packages.md)
   - [Debian/Ubuntu](./debian/README.md)
-  - [OpenWRT](./docs/OpenWRT.md)
+  - [OpenWRT](./doc/OpenWRT.md)
 
 ## How it works
 
@@ -173,4 +173,4 @@ To build `ssh-legion` for specific operating systems, see [Building packages](./
 For OS specific usage instructions, see:
 
 - [Debian/Ubuntu](./debian/README.md)
-- [OpenWRT](./docs/OpenWRT.md)
+- [OpenWRT](./doc/OpenWRT.md)
