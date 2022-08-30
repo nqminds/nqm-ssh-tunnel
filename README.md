@@ -2,6 +2,7 @@
 
 [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/nqminds/nqm-ssh-tunnel?include_prereleases)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
 [![Build](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml/badge.svg)](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml)
+[![OpenWRT package feed](https://img.shields.io/badge/OpenWRT%20Package%20Feed-%23002B49.svg?logo=OpenWrt&logoColor=white)](https://github.com/nqminds/manysecured-openwrt-packages)
 
 Automatic reverse SSH tunnel for multiple IoT devices.
 
