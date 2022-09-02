@@ -3,6 +3,7 @@
 [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/nqminds/nqm-ssh-tunnel?include_prereleases)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
 [![Build](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml/badge.svg)](https://github.com/nqminds/nqm-ssh-tunnel/actions/workflows/build.yml)
 [![OpenWRT package feed](https://img.shields.io/badge/OpenWRT%20Package%20Feed-%23002B49.svg?logo=OpenWrt&logoColor=white)](https://github.com/nqminds/manysecured-openwrt-packages)
+[![GitHub Liscense](https://img.shields.io/github/license/nqminds/ssh-legion)](https://github.com/nqminds/ssh-legion/blob/master/LICENSE.md)
 
 Automatic reverse SSH tunnel for multiple IoT devices.
 
@@ -29,7 +30,7 @@ use unique ports automatically.
 - [OS specific instructions](#os-specific-instructions)
   - [Building packages](./doc/Building-packages.md)
   - [Debian/Ubuntu](./debian/README.md)
-  - [OpenWRT](./docs/OpenWRT.md)
+  - [OpenWRT](./doc/OpenWRT.md)
 
 ## How it works
 
@@ -174,4 +175,4 @@ To build `ssh-legion` for specific operating systems, see [Building packages](./
 For OS specific usage instructions, see:
 
 - [Debian/Ubuntu](./debian/README.md)
-- [OpenWRT](./docs/OpenWRT.md)
+- [OpenWRT](./doc/OpenWRT.md)
