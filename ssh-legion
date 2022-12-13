@@ -56,10 +56,12 @@ function ssh-legion() {
   local CONNECTION_TIME="${1-""}"
   local RETRY_ON_SUCCESS_EXIT="${2-"1"}"
 
-  if [ -f /var/lib/dbus/machine-id ]; then
+  if [ -f /etc/machine-id ]; then
+    MACHINE_ID="$(cat /etc/machine-id)"
+  elif [ -f /var/lib/dbus/machine-id ]; then
     MACHINE_ID=$(cat /var/lib/dbus/machine-id)
   else
-    log-info 'No dbus machine-id found, creating one from mac addresses.'
+    log-info 'No dbus machine-id or /etc/machine-id found, creating one from mac addresses.'
     mac="$(cat /sys/class/net/*/address | head -1)"
     MACHINE_ID="$(( 0x"${mac//:/''}" ))"
   fi
