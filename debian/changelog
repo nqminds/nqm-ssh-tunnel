@@ -1,3 +1,12 @@
+ssh-legion (0.1.4) stable; urgency=low
+
+  [ Alois Klink ]
+  * feat: load default port from `/etc/machine-id`
+    Previously only `/var/lib/dbus/machine-id` was supported,
+    but this does not exist on some platforms.
+
+ -- Alois Klink <alois@nquiringminds.com>  Fri, 16 Dec 2022 09:12:00 +0100
+
 ssh-legion (0.1.3) stable; urgency=medium
 
   [ Alois Klink ]
