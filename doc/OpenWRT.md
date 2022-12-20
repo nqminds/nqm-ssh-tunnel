@@ -32,3 +32,18 @@ The service can be enabled (e.g. will run on startup) using `/etc/init.d/ssh-leg
 Finally, you can view logs with `logread -e ssh-legion`.
 
 It is highly recommended to restart the OpenWRT box and confirm that `ssh-legion` works.
+
+## Turris OS
+
+For Turris OS, you also need to add `ssh-legion` to the local repo, to prevent
+Turris OS updates from automatically uninstalling your custom package.
+
+See https://wiki.turris.cz/doc/en/public/custom_packages
+
+Essentially, you need to run `localrepo add ~/download/ssh-legion_0.1.4-1_all.ipk`.
+
+This will:
+
+- create repository directory `/usr/share/updater/localrepo/user`
+- add it into the configuration at `/usr/share/updater/localrepo/localrepo.lua`
+- copy the specified `ssh-legion` package there (ie. into _user_ local repository)
