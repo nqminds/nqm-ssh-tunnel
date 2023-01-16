@@ -1,3 +1,13 @@
+ssh-legion (0.1.5) stable; urgency=high
+
+  [ Alois Klink ]
+  * fix: fix bash file descriptor leak
+    The ssh-legion bash script has a leak when the ssh process fail.
+    This can cause the ssh tunnel to fail after a while,
+    **WITHOUT the ssh-legion process exiting**.
+
+ -- Alois Klink <alois@nquiringminds.com>  Mon, 16 Jan 2023 13:01:00 +0000
+
 ssh-legion (0.1.4) stable; urgency=low
 
   [ Alois Klink ]
