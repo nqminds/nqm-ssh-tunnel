@@ -217,9 +217,13 @@ EOF
       | tee >( cat 1>&"$ssh_stderr" ) | grep -q "Error: remote port forwarding failed for listen port"
     } {ssh_stdout}>&1 {ssh_stderr}>&2
   then
+    # close temporary file descriptors
+    exec {ssh_stdout}<&- {ssh_stderr}<&-
     # we need to change the port
     return "$EX_UNAVAILABLE"
   fi
+  # close temporary file descriptors
+  exec {ssh_stdout}<&- {ssh_stderr}<&-
 }
 
 function view-key() {
