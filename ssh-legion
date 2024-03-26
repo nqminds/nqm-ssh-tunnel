@@ -207,6 +207,22 @@ EOF
     # SSH will terminate connection if SSH tunnel fails
     "-o" "ExitOnForwardFailure=yes"
   )
+
+  if [ -n "$interface" ]; then
+      interface_ip=$(ip addr show $interface | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+      if [ -z "$interface_ip" ]; then
+          log-error "Failed to get IP address for interface $interface."
+          exit 1
+      fi
+      log-info "Using interface $interface with IP $interface_ip"
+  else
+      log-info "No network interface specified, using default routing."
+  fi
+
+  if [ -n "$interface_ip" ]; then
+      ssh_options+=("-b" "$interface_ip")
+  fi
+
   ssh-global-options ssh_options
 
   # pipe stderr through grep to see if SSH fails
@@ -270,6 +286,7 @@ Options:
   -c, --config:      Specify a custom ssh_config file.
                      Defaults to $config.
                      Ignored if this file doesn't exist or cannot be read.
+  -i, --interface:   Specify the network interface or connection name to use for the SSH connection.
 
 "
 
@@ -277,7 +294,7 @@ showHelp() {
   echo 2>&1 "$help_text"
 }
 
-options=$(getopt -l "help,destination:,check,config:,host-port:,view-key" -o "h,d:,P:" -- "$@")
+options=$(getopt -l "help,destination:,check,config:,host-port:,view-key,interface:" -o "h,d:,P:,i:" -- "$@")
 eval set -- "$options"
 
 while [ "$1" ]; do
@@ -311,6 +328,10 @@ case $1 in
     ;;
 --view-key)
     view_key=1
+    ;;
+--interface|-i)
+    interface="$2"
+    shift
     ;;
 --)
     shift
